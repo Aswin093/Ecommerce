@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+    .signup-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    .signup-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .form-button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .form-button:hover {
+      background-color: #0056b3;
+    }
+    .error-message {
+      color: red;
+      text-align: center;
+      display: none;
+      margin-bottom: 15px;
+    }
+    .login-link {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .login-link a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .login-link a:hover {
+      text-decoration: underline;
+      color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h2>Signup</h2>
+    <div id="error-message" class="error-message"></div>
+    <input type="text" id="customerName" class="form-input" placeholder="Full Name" required>
+    <input type="email" id="email" class="form-input" placeholder="Email" required>
+    <input type="password" id="password" class="form-input" placeholder="Password" required>
+    <input type="tel" id="contactNumber" class="form-input" placeholder="Contact Number" required>
+    <button class="form-button" onclick="signup()">Signup</button>
+    <div class="login-link">
+      Already have an account? <a href="http://127.0.0.1:5500/selectors/login.html">Login</a>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://192.168.2.138:5154';
+
+    async function signup() {
+      const customerName = document.getElementById('customerName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const contactNumber = document.getElementById('contactNumber').value.trim();
+      const errorMessage = document.getElementById('error-message');
+
+      errorMessage.style.display = 'none';
+
+      if (!customerName || !email || !password || !contactNumber) {
+        errorMessage.textContent = 'All fields are required.';
+        errorMessage.style.display = 'block';
+        return;
+      }
+
+      const signupData = {
+        customerName,
+        email,
+        password,
+        contactNumber
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/api/CustomerSignup/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(signupData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem('authToken', data.token);
+          alert('Signup successful! Please login.');
+          window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+        } else {
+          errorMessage.textContent = data.message || 'Signup failed. Please try again.';
+          errorMessage.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error during signup:', error);
+        errorMessage.textContent = 'An error occurred while signing up. Please try again later.';
+        errorMessage.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

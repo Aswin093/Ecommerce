@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta charset="UTF-8">
+    <title>Your Orders</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        nav h1 {
+            margin: 0;
+            font-size: 1.8em;
+            cursor: pointer;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .home-link, .cart-link, .orders-link, .profile-link {
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: color 0.3s ease;
+        }
+
+        .home-link:hover, .cart-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .orders-link:hover {
+            color: #ff9800;
+            text-decoration: underline;
+        }
+
+        .profile-link:hover {
+            color: #607d8b;
+            text-decoration: underline;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .user-profile img:hover {
+            transform: scale(1.1);
+        }
+
+        .user-profile span {
+            color: white;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        #orders-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 30px;
+            max-width: 1400px; /* Increased width */
+            margin: auto;
+        }
+
+        .order-card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .order-left {
+            flex: 0 0 300px; /* Fixed width for image and title */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .order-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .order-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .order-right {
+            flex: 1; /* Takes remaining space */
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .order-details div {
+            font-size: 1em;
+            color: #444;
+        }
+
+        .order-status {
+            font-size: 1em;
+            font-weight: 600;
+            color: #007bff; /* Fixed invalid color */
+        }
+
+        .cancelled-message {
+            color: #ff0000;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .empty-orders {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .shop-now-btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .shop-now-btn:hover {
+            background-color: #0056b3;
+            box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3);
+        }
+
+        #notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 0.95em;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .order-card {
+                flex-direction: column; /* Stack vertically on small screens */
+            }
+
+            .order-left {
+                flex: none;
+                width: 100%;
+            }
+
+            .order-title {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" onclick="goToHome()" style="text-decoration: none; color: white;">
+            <h1>Mobile Store</h1>
+        </a>
+        <div class="nav-buttons">
+            <a href="#" onclick="goToHome()" class="home-link">🏠 Home</a>
+            <a href="#" onclick="goToCart()" class="cart-link">🛒 Cart</a>
+            <a href="#" onclick="goToOrders()" class="orders-link">📦 Orders</a>
+            <div id="profile-section">
+                <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="orders-container">
+        <!-- Orders will be loaded here -->
+    </div>
+    <div id="notification-container"></div>
+
+    <script>
+        const API_BASE = 'http://192.168.2.37:5154';
+        const ORDERS_API = `${API_BASE}/api/Orders`;
+        const ORDER_STATUS_API = `${API_BASE}/api/OrderStatus`;
+
+        function showNotification(message, isError = false) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            if (isError) {
+                notification.classList.add('error');
+            }
+            notification.textContent = message;
+            container.appendChild(notification);
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function goToHome() {
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+        }
+
+        function getCustomerIdFromToken(token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.CustomerId || payload.CustomerID || 0;
+            } catch (err) {
+                console.error('JWT decode error:', err);
+                return 0;
+            }
+        }
+
+        function goToCart() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your cart.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/addtocart.html';
+        }
+
+        function goToOrders() {
+            // Already on orders page
+        }
+
+        function goToProfile() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in first.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/profile.html';
+        }
+
+        async function loadUserProfile() {
+            const token = localStorage.getItem('authToken');
+            const profileSection = document.getElementById('profile-section');
+
+            if (!token) {
+                profileSection.innerHTML = `
+                    <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+                `;
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                profileSection.innerHTML = `
+                    <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/Customer/${customerID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch profile.');
+
+                const data = await response.json();
+                const imageUrl = data.image ? `${API_BASE}${data.image}` : 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+                const customerName = data.customerName || 'User';
+
+                profileSection.innerHTML = `
+                    <div class="user-profile" onclick="goToProfile()">
+                        <img src="${imageUrl}" alt="Profile Picture" title="${customerName}">
+                        <span>${customerName}</span>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Error loading profile:', err);
+                profileSection.innerHTML = `
+                    <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+                `;
+            }
+        }
+
+        async function getOrderStatus(orderID, token) {
+            try {
+                const response = await fetch(`${ORDER_STATUS_API}/${orderID}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) {
+                    console.warn(`Failed to fetch status for order ${orderID}: ${response.status} ${response.statusText}`);
+                    return 'Unknown';
+                }
+                const order = await response.json();
+                console.log(`Order status response for order ${orderID}:`, order);
+                if (order.orderStatuses && Array.isArray(order.orderStatuses) && order.orderStatuses.length > 0) {
+                    return order.orderStatuses[order.orderStatuses.length - 1].status || 'Unknown';
+                }
+                return 'Unknown';
+            } catch (err) {
+                console.error(`Error fetching status for order ${orderID}:`, err);
+                return 'Unknown';
+            }
+        }
+
+        async function loadOrders(customerID, token) {
+            const container = document.getElementById('orders-container');
+            container.innerHTML = `<div class="loading">Loading orders...</div>`;
+
+            try {
+                const response = await fetch(`${ORDERS_API}/${customerID}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to load orders');
+                const orders = await response.json();
+                console.log('Raw orders:', orders);
+
+                container.innerHTML = '';
+
+                if (!Array.isArray(orders) || orders.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-orders">
+                            You have no orders yet. Start shopping to place an order!<br>
+                            <button class="shop-now-btn" onclick="window.location.href='http://127.0.0.1:5500/selectors/asw/index.html'">Shop Now</button>
+                        </div>`;
+                    return;
+                }
+
+                // Batch fetch statuses
+                const statusPromises = orders.map(order => getOrderStatus(order.orderID, token));
+                const statuses = await Promise.all(statusPromises);
+
+                orders.forEach((order, index) => {
+                    const status = statuses[index];
+                    if (status === 'Unknown') {
+                        console.warn(`Skipping order ${order.orderID} due to unknown status`);
+                        return;
+                    }
+                    const div = document.createElement('div');
+                    div.className = 'order-card';
+                    div.innerHTML = `
+                        <div class="order-left">
+                            <img src="${order.imagepath || 'https://via.placeholder.com/150'}" alt="${order.productName}">
+                            <div class="order-title">${order.productName}</div>
+                        </div>
+                        <div class="order-right">
+                            <div class="order-details">
+                                <div>Quantity: ${order.quantity}</div>
+                                <div>Order Date: ${new Date(order.orderDate).toLocaleString()}</div>
+                                <div>Dealer: ${order.companyname || 'N/A'}</div>
+                                <div class="order-status">Status: ${status}</div>
+                                ${status === 'Cancelled' ? '<div class="cancelled-message">This order has been cancelled by the dealer.</div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                    div.addEventListener('click', () => {
+                        window.location.href = `http://127.0.0.1:5500/selectors/asw/orderstatus.html?orderID=${order.orderID}`;
+                    });
+                    container.appendChild(div);
+                });
+            } catch (err) {
+                console.error('Error loading orders:', err);
+                container.innerHTML = `
+                    <div style="color:red; text-align:center; padding:40px;">
+                        Could not load orders. Please try again.
+                    </div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your orders.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+                    showNotification('Session expired. Please log in again.', true);
+                    localStorage.removeItem('authToken');
+                    setTimeout(() => {
+                        window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                    }, 2000);
+                    return;
+                }
+            } catch (err) {
+                console.error('Invalid token:', err);
+                showNotification('Invalid token. Please log in again.', true);
+                localStorage.removeItem('authToken');
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid customer ID. Please log in again.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+
+            loadUserProfile();
+            loadOrders(customerID, token);
+        });
+    </script>
+</body>
+</html>

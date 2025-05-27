@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Products</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        nav h1 {
+            margin: 0;
+            font-size: 1.8em;
+            cursor: pointer;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .home-link, .cart-link, .orders-link, .profile-link {
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: color 0.3s ease, text-decoration 0.3s ease;
+        }
+
+        .home-link:hover, .cart-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .orders-link:hover {
+            color: #ff9800;
+            text-decoration: underline;
+        }
+
+        .profile-link:hover {
+            color: #607d8b;
+            text-decoration: underline;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .user-profile img:hover {
+            transform: scale(1.1);
+        }
+
+        .user-profile span {
+            color: white;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 10px 15px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #search-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+
+        #search-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-result {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-result:hover,
+        .search-result:focus {
+            background-color: #f5f5f5;
+        }
+
+        .search-result img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-right: 10px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .search-result span {
+            font-size: 1em;
+            color: #333;
+        }
+
+        #product-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .product-card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .price {
+            color: #e91e63;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+        .stock-warning {
+            color: #d32f2f;
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .button-group {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .buy-btn {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .buy-btn:hover:not(:disabled) {
+            background-color: #1e7e34;
+            box-shadow: 0 6px 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .buy-btn:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .add-cart-link {
+            color: #007bff;
+            font-weight: bold;
+            text-decoration: none;
+            transition: color 0.3s ease, text-decoration 0.3s ease;
+        }
+
+        .add-cart-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        #notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 0.95em;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" onclick="goToHome()" style="text-decoration: none; color: white;">
+            <h1>Mobile Store</h1>
+        </a>
+        <div class="nav-buttons">
+            <a href="#" onclick="goToHome()" class="home-link">🏠 Home</a>
+            <a href="#" onclick="goToCart()" class="cart-link">🛒 Cart</a>
+            <a href="#" onclick="goToOrders()" class="orders-link">📦 Orders</a>
+            <div id="profile-section">
+                <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+            </div>
+        </div>
+    </nav>
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search products..." autocomplete="off">
+        <div id="search-dropdown"></div>
+    </div>
+    <div id="product-list">Loading products...</div>
+    <div id="notification-container"></div>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const API_BASE = 'http://192.168.2.138:5154';
+        const PRODUCTS_API = `${API_BASE}/api/Products/all`;
+        const SEARCH_API = `${API_BASE}/api/ProductSearch/search`;
+        const ADD_CART_API = `${API_BASE}/api/Cart/add`;
+
+        function showNotification(message, isError = false) {
+            const $container = $('#notification-container');
+            const $notification = $('<div class="notification"></div>').text(message);
+            if (isError) {
+                $notification.addClass('error');
+            }
+            $container.append($notification);
+            $notification.addClass('show');
+            setTimeout(() => {
+                $notification.removeClass('show');
+                setTimeout(() => $notification.remove(), 300);
+            }, 3000);
+        }
+
+        function goToHome() {
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+        }
+
+        function getCustomerIdFromToken(token) {
+            try {
+                const payloadBase64 = token.split('.')[1];
+                const decodedPayload = atob(payloadBase64);
+                const payload = JSON.parse(decodedPayload);
+                return payload.CustomerId || payload.CustomerID || 0;
+            } catch (e) {
+                console.error('Failed to decode token:', e);
+                return 0;
+            }
+        }
+
+        function goToCart() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your cart.', true);
+                window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/addtocart.html';
+        }
+
+        function goToOrders() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your orders.', true);
+                window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                return;
+            }
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+        }
+
+        function goToProfile() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in first.', true);
+                window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                return;
+            }
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/profile.html';
+        }
+
+        function loadUserProfile() {
+            const token = localStorage.getItem('authToken');
+            const $profileSection = $('#profile-section');
+
+            if (!token) {
+                $profileSection.html('<a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>');
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                $profileSection.html('<a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>');
+                return;
+            }
+
+            $.ajax({
+                url: `${API_BASE}/api/Customer/${customerID}`,
+                headers: { 'Authorization': `Bearer ${token}` },
+                method: 'GET',
+                success: function(data) {
+                    const imageUrl = data.image ? `${API_BASE}${data.image}` : 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+                    const customerName = data.customerName || 'User';
+                    $profileSection.html(`
+                        <div class="user-profile" onclick="goToProfile()">
+                            <img src="${imageUrl}" alt="Profile Picture" title="${customerName}">
+                            <span>${customerName}</span>
+                        </div>
+                    `);
+                },
+                error: function(err) {
+                    console.error('Error loading profile:', err);
+                    $profileSection.html('<a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>');
+                }
+            });
+        }
+
+        function addToCart(productID) {
+            if (!productID) {
+                showNotification('Invalid product. Please try again.', true);
+                return;
+            }
+
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to add items to your cart.', true);
+                localStorage.setItem('pendingCartItem', JSON.stringify({ productId: productID }));
+                window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid or missing Customer ID in token.', true);
+                window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                return;
+            }
+
+            const CART_PRODUCTS_API = `${API_BASE}/api/CartProduct/customer/${customerID}`;
+            $.ajax({
+                url: CART_PRODUCTS_API,
+                headers: { 'Authorization': `Bearer ${token}` },
+                method: 'GET',
+                success: function(cartItems) {
+                    const existingItem = cartItems.find(item => item.productID === productID);
+
+                    let cartData;
+                    if (existingItem) {
+                        cartData = {
+                            cartID: existingItem.cartID,
+                            customerID: customerID,
+                            productID: productID,
+                            quantity: existingItem.quantity + 1,
+                            addedDate: new Date().toISOString(),
+                            isCheckedOut: false
+                        };
+                    } else {
+                        cartData = {
+                            customerID: customerID,
+                            productID: productID,
+                            quantity: 1,
+                            addedDate: new Date().toISOString(),
+                            isCheckedOut: false
+                        };
+                    }
+
+                    $.ajax({
+                        url: ADD_CART_API,
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        data: JSON.stringify(cartData),
+                        success: function() {
+                            showNotification('Item added to cart!');
+                        },
+                        error: function(err) {
+                            console.error('Error adding to cart:', err);
+                            showNotification('Failed to update/add item to cart.', true);
+                        }
+                    });
+                },
+                error: function(err) {
+                    console.error('Add to cart error:', err);
+                    showNotification('An error occurred while adding to cart.', true);
+                }
+            });
+        }
+
+        function goToCheckout(productID) {
+            if (!productID) {
+                showNotification('Invalid product. Please try again.', true);
+                return;
+            }
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to proceed to checkout.', true);
+                localStorage.setItem('pendingCheckout', productID);
+                window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                return;
+            }
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid or missing Customer ID in token.', true);
+                window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                return;
+            }
+            window.location.href = `http://127.0.0.1:5500/selectors/asw/checkout.html?productID=${productID}`;
+        }
+
+        function loadProducts() {
+            const $container = $('#product-list');
+            $container.html('Loading products...');
+
+            $.ajax({
+                url: PRODUCTS_API,
+                method: 'GET',
+                success: function(products) {
+                    $container.empty();
+
+                    if (products.length === 0) {
+                        $container.html('<p style="color: red;">No products available.</p>');
+                        return;
+                    }
+
+                    $.each(products, function(index, product) {
+                        // Check stock and prepare stock warning message if applicable
+                        let stockMessage = '';
+                        const isOutOfStock = product.stock === 0;
+                        if (product.stock <= 5 && product.stock > 0) {
+                            stockMessage = `<div class="stock-warning">Only ${product.stock} left!</div>`;
+                        } else if (isOutOfStock) {
+                            stockMessage = `<div class="stock-warning">Out of stock!</div>`;
+                        }
+
+                        const $div = $(`
+                            <div class="product-card">
+                                <div class="product-info" style="cursor: pointer;">
+                                    <div class="product-title">${product.productName}</div>
+                                    <img src="${product.imagePath || 'https://via.placeholder.com/150'}" alt="${product.productName}">
+                                    <div class="price">Price: $${product.price.toFixed(2)}</div>
+                                    ${stockMessage}
+                                    <div class="timestamp">${product.description || 'No description available'}</div>
+                                </div>
+                                <div class="button-group">
+                                    <a href="#" class="add-cart-link">Add to Cart</a>
+                                    <button class="buy-btn" ${isOutOfStock ? 'disabled' : ''}>Buy Now</button>
+                                </div>
+                            </div>
+                        `);
+
+                        $div.find('.product-info').on('click', function() {
+                            window.location.href = `http://127.0.0.1:5500/selectors/asw/productdetails.html?productID=${product.productID}`;
+                        });
+
+                        $div.find('.add-cart-link').on('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addToCart(product.productID);
+                        });
+
+                        $div.find('.buy-btn').on('click', function(e) {
+                            e.stopPropagation();
+                            goToCheckout(product.productID);
+                        });
+
+                        $container.append($div);
+                    });
+                },
+                error: function(err) {
+                    console.error('Fetch error:', err);
+                    $container.html('<p style="color: red;">Failed to load products.</p>');
+                }
+            });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        function searchProducts(searchTerm) {
+            const $dropdown = $('#search-dropdown');
+            $dropdown.empty();
+
+            if (!searchTerm) {
+                $dropdown.hide();
+                return;
+            }
+
+            $.ajax({
+                url: `${SEARCH_API}?name=${encodeURIComponent(searchTerm)}`,
+                method: 'GET',
+                success: function(products) {
+                    if (products.length === 0) {
+                        $dropdown.html('<div class="search-result">No products found</div>');
+                        $dropdown.show();
+                        return;
+                    }
+
+                    $.each(products, function(index, product) {
+                        const $result = $(`
+                            <div class="search-result" tabindex="0">
+                                <img src="${product.image || 'https://via.placeholder.com/150'}" alt="${product.productName}">
+                                <span>${product.productName}</span>
+                            </div>
+                        `);
+
+                        $result.on('click', function() {
+                            window.location.href = `http://127.0.0.1:5500/selectors/asw/productdetails.html?productID=${product.productID}`;
+                        });
+
+                        $result.on('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                window.location.href = `http://127.0.0.1:5500/selectors/asw/productdetails.html?productID=${product.productID}`;
+                            } else if (e.key === 'ArrowDown') {
+                                const $next = $result.next();
+                                if ($next.length) $next.focus();
+                                e.preventDefault();
+                            } else if (e.key === 'ArrowUp') {
+                                const $prev = $result.prev();
+                                if ($prev.length) $prev.focus();
+                                else $('#search-input').focus();
+                                e.preventDefault();
+                            }
+                        });
+
+                        $dropdown.append($result);
+                    });
+
+                    $dropdown.show();
+                },
+                error: function(err) {
+                    console.error('Search error:', err);
+                    $dropdown.html('<div class="search-result">Error searching products</div>');
+                    $dropdown.show();
+                }
+            });
+        }
+
+        function initSearch() {
+            const $searchInput = $('#search-input');
+            const $dropdown = $('#search-dropdown');
+            const debouncedSearch = debounce(searchProducts, 300);
+
+            $searchInput.on('input', function() {
+                debouncedSearch($searchInput.val().trim());
+            });
+
+            $searchInput.on('focus', function() {
+                if ($searchInput.val().trim()) {
+                    debouncedSearch($searchInput.val().trim());
+                }
+            });
+
+            $searchInput.on('blur', function() {
+                setTimeout(() => {
+                    $dropdown.hide();
+                }, 200);
+            });
+
+            $(document).on('click', function(e) {
+                if (!$searchInput.is(e.target) && !$dropdown.is(e.target) && $dropdown.has(e.target).length === 0) {
+                    $dropdown.hide();
+                }
+            });
+
+            $searchInput.on('keydown', function(e) {
+                if (e.key === 'ArrowDown') {
+                    const $firstResult = $dropdown.find('.search-result').first();
+                    if ($firstResult.length) $firstResult.focus();
+                    e.preventDefault();
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            loadProducts();
+            loadUserProfile();
+            initSearch();
+
+            const pendingCheckout = localStorage.getItem('pendingCheckout');
+            if (pendingCheckout) {
+                localStorage.removeItem('pendingCheckout');
+                goToCheckout(parseInt(pendingCheckout));
+            }
+
+            const pendingCartItem = localStorage.getItem('pendingCartItem');
+            if (pendingCartItem) {
+                const item = JSON.parse(pendingCartItem);
+                localStorage.removeItem('pendingCartItem');
+                addToCart(item.productId);
+            }
+        });
+    </script>
+</body>
+</html>

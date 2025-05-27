@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta charset="UTF-8">
+    <title>Your Cart</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        nav h1 {
+            margin: 0;
+            font-size: 1.8em;
+            cursor: pointer;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .home-link, .cart-link, .orders-link, .profile-link {
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: color 0.3s ease;
+        }
+
+        .home-link:hover, .cart-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .orders-link:hover {
+            color: #ff9800;
+            text-decoration: underline;
+        }
+
+        .profile-link:hover {
+            color: #607d8b;
+            text-decoration: underline;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .user-profile img:hover {
+            transform: scale(1.1);
+        }
+
+        .user-profile span {
+            color: white;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        #cart-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .cart-item {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .cart-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .price {
+            color: #007bff;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .cart-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .cart-details {
+            margin-top: 15px;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quantity-btn {
+            background-color: #f0f0f0;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .quantity-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .remove-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .remove-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .checkout-section {
+            grid-column: 1 / -1;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .checkout-btn {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .checkout-btn:hover {
+            background-color: #1e7e34;
+            box-shadow: 0 6px 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .shop-now-btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            font-weight: bold;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .shop-now-btn:hover {
+            background-color: #0056b3;
+            box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3);
+        }
+
+        #notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 0.95em;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .notification.confirm {
+            background-color: #e8f0fe;
+            color: #1a3c34;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+        }
+
+        .notification.confirm button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .notification.confirm button:hover {
+            background-color: #1e7e34;
+        }
+
+        .notification.confirm button.cancel {
+            background-color: #dc3545;
+        }
+
+        .notification.confirm button.cancel:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" onclick="goToHome()" style="text-decoration: none; color: white;">
+            <h1>Mobile Store</h1>
+        </a>
+        <div class="nav-buttons">
+            <a href="#" onclick="goToHome()" class="home-link">🏠 Home</a>
+            <a href="#" onclick="goToCart()" class="cart-link">🛒 Cart</a>
+            <a href="#" onclick="goToOrders()" class="orders-link">📦 Orders</a>
+            <div id="profile-section">
+                <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="cart-container">
+        <!-- Cart items will be loaded here -->
+    </div>
+    <div id="notification-container"></div>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const API_BASE = 'http://192.168.2.138:5154';
+        const CART_API = `${API_BASE}/api/CartProduct/customer`;
+        const REMOVE_CART_API = `${API_BASE}/api/Cart/remove`;
+        const ORDER_API = `${API_BASE}/api/Orders`;
+        const ADDRESSES_API = `${API_BASE}/api/CustomerAddress/customer`;
+
+        function showNotification(message, isError = false, isConfirm = false, confirmCallback = null) {
+            const $container = $('#notification-container');
+            const $notification = $('<div class="notification"></div>');
+            
+            if (isConfirm) {
+                $notification.addClass('confirm');
+                $notification.html(`
+                    ${message}
+                    <div>
+                        <button class="confirm-btn">Yes</button>
+                        <button class="cancel-btn">No</button>
+                    </div>
+                `);
+                $notification.find('.confirm-btn').on('click', function() {
+                    if (confirmCallback) confirmCallback();
+                    $notification.remove();
+                });
+                $notification.find('.cancel-btn').on('click', function() {
+                    $notification.remove();
+                });
+            } else {
+                if (isError) {
+                    $notification.addClass('error');
+                }
+                $notification.text(message);
+                setTimeout(() => {
+                    $notification.removeClass('show');
+                    setTimeout(() => $notification.remove(), 300);
+                }, 3000);
+            }
+
+            $container.append($notification);
+            $notification.addClass('show');
+        }
+
+        function goToHome() {
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+        }
+
+        function getCustomerIdFromToken(token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.CustomerId || payload.CustomerID || 0;
+            } catch (err) {
+                console.error('JWT decode error:', err);
+                return 0;
+            }
+        }
+
+        function goToCart() {
+            // Already on cart page
+        }
+
+        function goToOrders() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your orders.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+        }
+
+        function goToProfile() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in first.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/profile.html';
+        }
+
+        function loadUserProfile() {
+            const token = localStorage.getItem('authToken');
+            const $profileSection = $('#profile-section');
+
+            if (!token) {
+                $profileSection.html('<a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>');
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                $profileSection.html('<a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>');
+                return;
+            }
+
+            $.ajax({
+                url: `${API_BASE}/api/Customer/${customerID}`,
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` },
+                success: function(data) {
+                    const imageUrl = data.image ? `${API_BASE}${data.image}` : 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+                    const customerName = data.customerName || 'User';
+                    $profileSection.html(`
+                        <div class="user-profile" onclick="goToProfile()">
+                            <img src="${imageUrl}" alt="Profile Picture" title="${customerName}">
+                            <span>${customerName}</span>
+                        </div>
+                    `);
+                },
+                error: function(err) {
+                    console.error('Error loading profile:', err);
+                    $profileSection.html('<a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>');
+                }
+            });
+        }
+
+        function loadCart(customerID, token) {
+            const $container = $('#cart-container');
+            $container.html('Loading cart...');
+
+            $.ajax({
+                url: `${CART_API}/${customerID}`,
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` },
+                success: function(cartItems) {
+                    console.log('Raw cart items:', cartItems);
+                    $container.empty();
+
+                    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+                        $container.html(`
+                            <div class="empty-cart">
+                                Your cart is empty. Start shopping to add items!<br>
+                                <button class="shop-now-btn" onclick="window.location.href='http://127.0.0.1:5500/selectors/asw/index.html'">Shop Now</button>
+                            </div>`);
+                        localStorage.removeItem('cartQuantities');
+                        return;
+                    }
+
+                    const validCartItems = cartItems.filter(item => {
+                        const isValid = item.productID && !isNaN(item.productID) && item.productID > 0;
+                        if (!isValid) console.warn('Skipping invalid cart item:', item);
+                        return isValid;
+                    });
+
+                    if (validCartItems.length === 0) {
+                        $container.html(`
+                            <div class="empty-cart">
+                                Your cart contains invalid items.<br>
+                                <button class="shop-now-btn" onclick="clearCart(${customerID}, '${token}')">Clear Cart</button>
+                                <button class="shop-now-btn" onclick="window.location.href='http://127.0.0.1:5500/selectors/asw/index.html'">Shop Now</button>
+                            </div>`);
+                        localStorage.removeItem('cartQuantities');
+                        return;
+                    }
+
+                    let cartQuantities = {};
+                    try {
+                        const storedQuantities = localStorage.getItem('cartQuantities');
+                        if (storedQuantities) {
+                            cartQuantities = JSON.parse(storedQuantities);
+                            const validProductIDs = new Set(validCartItems.map(item => item.productID));
+                            cartQuantities = Object.fromEntries(
+                                Object.entries(cartQuantities).filter(([productID]) => validProductIDs.has(parseInt(productID)))
+                            );
+                        }
+                    } catch (err) {
+                        console.error('Error parsing cartQuantities:', err);
+                        cartQuantities = {};
+                    }
+
+                    validCartItems.forEach(item => {
+                        cartQuantities[item.productID] = cartQuantities[item.productID] || item.quantity;
+                    });
+
+                    localStorage.setItem('cartQuantities', JSON.stringify(cartQuantities));
+
+                    let totalPrice = 0;
+                    $.each(validCartItems, function(index, item) {
+                        const quantity = cartQuantities[item.productID] || item.quantity;
+                        const itemTotal = item.price * quantity;
+                        totalPrice += itemTotal;
+
+                        const $div = $(`
+                            <div class="cart-item">
+                                <img src="${item.imagePath || 'https://via.placeholder.com/150'}" alt="${item.productName}">
+                                <div class="product-title">${item.productName}</div>
+                                <div class="price">Price: $${item.price.toFixed(2)}</div>
+                                <div class="cart-details">
+                                    <div class="quantity-control">
+                                        <button class="quantity-btn">-</button>
+                                        <span>${quantity}</span>
+                                        <button class="quantity-btn">+</button>
+                                    </div>
+                                    <div class="price">Total: $${itemTotal.toFixed(2)}</div>
+                                    <button class="remove-btn">Remove</button>
+                                </div>
+                            </div>
+                        `);
+
+                        $div.on('click', function(e) {
+                            if (!$(e.target).is('button')) {
+                                window.location.href = `http://127.0.0.1:5500/selectors/asw/productdetails.html?productID=${item.productID}`;
+                            }
+                        });
+
+                        $div.find('.quantity-btn').eq(0).on('click', function(e) {
+                            e.stopPropagation();
+                            console.log('Decrease: cartID=', item.cartID, ', productID=', item.productID);
+                            updateQuantity(item.cartID, item.productID, quantity - 1, token);
+                        });
+
+                        $div.find('.quantity-btn').eq(1).on('click', function(e) {
+                            e.stopPropagation();
+                            console.log('Increase: cartID=', item.cartID, ', productID=', item.productID);
+                            updateQuantity(item.cartID, item.productID, quantity + 1, token);
+                        });
+
+                        $div.find('.remove-btn').on('click', function(e) {
+                            e.stopPropagation();
+                            console.log('Remove: cartID=', item.cartID, ', productID=', item.productID);
+                            removeFromCart(item.cartID, item.productID, token);
+                        });
+
+                        $container.append($div);
+                    });
+
+                    const $checkoutDiv = $(`
+                        <div class="checkout-section">
+                            <div class="total-price">Total: $${totalPrice.toFixed(2)}</div>
+                            <button class="checkout-btn">Proceed to Checkout</button>
+                        </div>
+                    `);
+
+                    $checkoutDiv.find('.checkout-btn').on('click', function() {
+                        checkout();
+                    });
+
+                    $container.append($checkoutDiv);
+                },
+                error: function(err) {
+                    console.error('Error loading cart:', err);
+                    showNotification('Could not load cart. Please try again.', true);
+                }
+            });
+        }
+
+        function updateQuantity(cartID, productID, newQuantity, token) {
+            if (!cartID || isNaN(cartID) || cartID <= 0 || !productID || isNaN(productID) || productID <= 0) {
+                console.error('Invalid cartID or productID:', { cartID, productID });
+                showNotification('Invalid cart or product data. Please refresh the page.', true);
+                return;
+            }
+
+            if (newQuantity < 1) {
+                removeFromCart(cartID, productID, token);
+                return;
+            }
+
+            let cartQuantities = {};
+            try {
+                const storedQuantities = localStorage.getItem('cartQuantities');
+                if (storedQuantities) {
+                    cartQuantities = JSON.parse(storedQuantities);
+                }
+                cartQuantities[productID] = newQuantity;
+                localStorage.setItem('cartQuantities', JSON.stringify(cartQuantities));
+            } catch (err) {
+                console.error('Error updating cartQuantities:', err);
+            }
+
+            $.ajax({
+                url: `${API_BASE}/api/Cart/update`,
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                data: JSON.stringify({
+                    cartID: cartID,
+                    productID: productID,
+                    quantity: newQuantity
+                }),
+                success: function() {
+                    const customerID = getCustomerIdFromToken(token);
+                    loadCart(customerID, token);
+                },
+                error: function(err) {
+                    console.error('Error updating quantity:', err);
+                    showNotification('Failed to update quantity. Local changes saved.', true);
+                }
+            });
+        }
+
+        function removeFromCart(cartID, productID, token) {
+            if (!cartID || isNaN(cartID) || cartID <= 0 || !productID || isNaN(productID) || productID <= 0) {
+                console.error('Invalid cartID or productID:', { cartID, productID });
+                showNotification('Invalid cart or product data. Please refresh the page.', true);
+                return;
+            }
+
+            let cartQuantities = {};
+            try {
+                const storedQuantities = localStorage.getItem('cartQuantities');
+                if (storedQuantities) {
+                    cartQuantities = JSON.parse(storedQuantities);
+                    delete cartQuantities[productID];
+                    localStorage.setItem('cartQuantities', JSON.stringify(cartQuantities));
+                }
+            } catch (err) {
+                console.error('Error updating cartQuantities:', err);
+            }
+
+            $.ajax({
+                url: `${REMOVE_CART_API}/${cartID}`,
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` },
+                success: function() {
+                    const customerID = getCustomerIdFromToken(token);
+                    loadCart(customerID, token);
+                    showNotification('Item removed from cart.');
+                },
+                error: function(err) {
+                    console.error('Error removing item:', err);
+                    showNotification('Failed to remove item from cart.', true);
+                }
+            });
+        }
+
+        function clearCart(customerID, token) {
+            $.ajax({
+                url: `${CART_API}/${customerID}`,
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` },
+                success: function(cartItems) {
+                    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+                        localStorage.removeItem('cartQuantities');
+                        loadCart(customerID, token);
+                        showNotification('Cart cleared successfully.');
+                        return;
+                    }
+
+                    const deleteRequests = cartItems.map(item =>
+                        $.ajax({
+                            url: `${REMOVE_CART_API}/${item.cartID}`,
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        })
+                    );
+
+                    $.when(...deleteRequests).then(function() {
+                        localStorage.removeItem('cartQuantities');
+                        loadCart(customerID, token);
+                        showNotification('Cart cleared successfully.');
+                    }).fail(function(err) {
+                        console.error('Error clearing cart:', err);
+                        showNotification('Failed to clear cart. Please try again.', true);
+                    });
+                },
+                error: function(err) {
+                    console.error('Error fetching cart for clearing:', err);
+                    showNotification('Failed to clear cart. Please try again.', true);
+                }
+            });
+        }
+
+        function checkout() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to proceed to checkout.', true);
+                const returnUrl = encodeURIComponent(`http://127.0.0.1:5500/selectors/asw/addtocart.html?action=checkout`);
+                setTimeout(() => {
+                    window.location.href = `http://127.0.0.1:5500/selectors/login.html?returnUrl=${returnUrl}`;
+                }, 2000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid or missing Customer ID in token.', true);
+                const returnUrl = encodeURIComponent(`http://127.0.0.1:5500/selectors/asw/addtocart.html?action=checkout`);
+                setTimeout(() => {
+                    window.location.href = `http://127.0.0.1:5500/selectors/login.html?returnUrl=${returnUrl}`;
+                }, 2000);
+                return;
+            }
+
+            $.ajax({
+                url: `${CART_API}/${customerID}`,
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` },
+                success: function(cartItems) {
+                    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+                        showNotification('Your cart is empty.', true);
+                        setTimeout(() => {
+                            window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+                        }, 2000);
+                        localStorage.removeItem('cartQuantities');
+                        return;
+                    }
+
+                    const validCartItems = cartItems.filter(item => {
+                        const isValid = item.productID && !isNaN(item.productID) && item.productID > 0;
+                        if (!isValid) console.error('Invalid productID in checkout:', item);
+                        return isValid;
+                    });
+
+                    if (validCartItems.length === 0) {
+                        showNotification('Your cart contains invalid items. Please clear your cart and try again.', true);
+                        $('#cart-container').html(`
+                            <div class="empty-cart">
+                                Invalid items detected.<br>
+                                <button class="shop-now-btn" onclick="clearCart(${customerID}, '${token}')">Clear Cart</button>
+                            </div>`);
+                        return;
+                    }
+
+                    let cartQuantities = {};
+                    try {
+                        const storedQuantities = localStorage.getItem('cartQuantities');
+                        if (storedQuantities) {
+                            cartQuantities = JSON.parse(storedQuantities);
+                        }
+                    } catch (err) {
+                        console.error('Error parsing cartQuantities:', err);
+                        showNotification('Invalid cart quantities. Using server data.', true);
+                        cartQuantities = {};
+                    }
+
+                    const checkoutItems = validCartItems
+                        .filter(item => (cartQuantities[item.productID] || item.quantity) > 0)
+                        .map(item => ({
+                            productID: item.productID,
+                            quantity: cartQuantities[item.productID] || item.quantity
+                        }));
+
+                    if (checkoutItems.length === 0) {
+                        showNotification('No valid items in cart.', true);
+                        setTimeout(() => {
+                            window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+                        }, 2000);
+                        localStorage.removeItem('cartQuantities');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: `${ADDRESSES_API}/${customerID}`,
+                        method: 'GET',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        success: function(addresses) {
+                            if (!Array.isArray(addresses) || addresses.length === 0) {
+                                showNotification('No delivery address found. Please add an address in your profile.', true);
+                                setTimeout(() => {
+                                    window.location.href = 'http://127.0.0.1:5500/selectors/asw/profile.html';
+                                }, 2000);
+                                return;
+                            }
+
+                            try {
+                                const cartParam = encodeURIComponent(checkoutItems.map(item => `${item.productID}:${item.quantity}`).join(','));
+                                window.location.href = `http://127.0.0.1:5500/selectors/asw/checkout.html?cart=${cartParam}`;
+                            } catch (error) {
+                                console.error('Error during checkout redirect:', error);
+                                showNotification('Failed to proceed to checkout. Please try again.', true);
+                            }
+                        },
+                        error: function(err) {
+                            console.error('Error fetching addresses:', err);
+                            showNotification('Failed to load addresses. Please try again.', true);
+                        }
+                    });
+                },
+                error: function(err) {
+                    console.error('Error loading cart for checkout:', err);
+                    showNotification('Failed to load cart. Please try again.', true);
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your cart.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid customer ID. Please log in again.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('action') === 'checkout') {
+                checkout();
+            }
+
+            loadUserProfile();
+            loadCart(customerID, token);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Status</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        nav h1 {
+            margin: 0;
+            font-size: 1.8em;
+            cursor: pointer;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .home-link, .cart-link, .orders-link, .profile-link {
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: color 0.3s ease;
+        }
+
+        .home-link:hover, .cart-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .orders-link:hover {
+            color: #ff9800;
+            text-decoration: underline;
+        }
+
+        .profile-link:hover {
+            color: #607d8b;
+            text-decoration: underline;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .user-profile img:hover {
+            transform: scale(1.1);
+        }
+
+        .user-profile span {
+            color: white;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        #order-status-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .order-card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .order-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            text-align: center;
+        }
+
+        .order-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .order-content {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .order-details {
+            flex: 1;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .order-details div {
+            margin: 5px 0;
+        }
+
+        .cancelled-message {
+            color: #ff0000;
+            font-size: 0.9em;
+            margin: 5px 0;
+            text-align: center;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .action-btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background-color: #0056b3;
+            box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3);
+        }
+
+        .action-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .action-btn.loading::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 0.95em;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+        }
+
+        .confirm-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            z-index: 2100;
+            display: none;
+            text-align: center;
+        }
+
+        .confirm-popup p {
+            margin: 0 0 20px;
+            font-size: 1em;
+            color: #333;
+        }
+
+        .confirm-popup .action-btn {
+            margin: 0 10px;
+        }
+
+        .confirm-popup .action-btn.cancel {
+            background-color: #6c757d;
+        }
+
+        .confirm-popup .action-btn.cancel:hover {
+            background-color: #5a6268;
+            box-shadow: 0 6px 10px rgba(108, 117, 125, 0.3);
+        }
+
+        .roadmap {
+            flex: 1;
+            padding-left: 20px;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .roadmap::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #e0e0e0;
+        }
+
+        .roadmap-item {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .roadmap-point {
+            position: absolute;
+            left: -20px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .roadmap-item.active .roadmap-point {
+            background: #28a745;
+        }
+
+        .roadmap-item.active .roadmap-label {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .roadmap-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .order-card {
+                padding: 10px;
+            }
+
+            .order-card img {
+                height: 150px;
+            }
+
+            .order-content {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .roadmap {
+                padding-left: 15px;
+            }
+
+            .roadmap::before {
+                left: 6px;
+            }
+
+            .roadmap-point {
+                left: -18px;
+                width: 10px;
+                height: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" onclick="goToHome()" style="text-decoration: none; color: white;">
+            <h1>Mobile Store</h1>
+        </a>
+        <div class="nav-buttons">
+            <a href="#" onclick="goToHome()" class="home-link">🏠 Home</a>
+            <a href="#" onclick="goToCart()" class="cart-link">🛒 Cart</a>
+            <a href="#" onclick="goToOrders()" class="orders-link">📦 Orders</a>
+            <div id="profile-section">
+                <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="order-status-container">
+        <!-- Order status will be loaded here -->
+    </div>
+    <div id="notification-container"></div>
+    <div class="confirm-overlay" id="confirm-overlay"></div>
+    <div class="confirm-popup" id="confirm-popup">
+        <p id="confirm-message"></p>
+        <button class="action-btn" id="confirm-yes">Yes</button>
+        <button class="action-btn cancel" id="confirm-no">No</button>
+    </div>
+
+    <script>
+        const API_BASE = 'http://192.168.2.138:5154';
+        const ORDER_STATUS_API = `${API_BASE}/api/OrderStatus`;
+        const ORDERS_API = `${API_BASE}/api/Orders`;
+
+        function showNotification(message, isError = false) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            if (isError) {
+                notification.classList.add('error');
+            }
+            notification.textContent = message;
+            notification.setAttribute('role', 'alert');
+            notification.setAttribute('aria-live', 'polite');
+            container.appendChild(notification);
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 100);
+            }, 1000);
+        }
+
+        function showConfirmPopup(message, onConfirm, onCancel) {
+            const overlay = document.getElementById('confirm-overlay');
+            const popup = document.getElementById('confirm-popup');
+            const messageElement = document.getElementById('confirm-message');
+            const yesBtn = document.getElementById('confirm-yes');
+            const noBtn = document.getElementById('confirm-no');
+
+            messageElement.textContent = message;
+            overlay.style.display = 'block';
+            popup.style.display = 'block';
+
+            const yesHandler = () => {
+                overlay.style.display = 'none';
+                popup.style.display = 'none';
+                onConfirm();
+                yesBtn.removeEventListener('click', yesHandler);
+                noBtn.removeEventListener('click', noHandler);
+            };
+
+            const noHandler = () => {
+                overlay.style.display = 'none';
+                popup.style.display = 'none';
+                if (onCancel) onCancel();
+                yesBtn.removeEventListener('click', yesHandler);
+                noBtn.removeEventListener('click', noHandler);
+            };
+
+            yesBtn.addEventListener('click', yesHandler);
+            noBtn.addEventListener('click', noHandler);
+        }
+
+        function goToHome() {
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+        }
+
+        function getCustomerIdFromToken(token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.CustomerId || payload.CustomerID || 0;
+            } catch (err) {
+                console.error('JWT decode error:', err);
+                return 0;
+            }
+        }
+
+        function goToCart() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your cart.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/addtocart.html';
+        }
+
+        function goToOrders() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your orders.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+        }
+
+        function goToProfile() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in first.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/profile.html';
+        }
+
+        async function loadUserProfile() {
+            const token = localStorage.getItem('authToken');
+            const profileSection = document.getElementById('profile-section');
+
+            if (!token) {
+                profileSection.innerHTML = `
+                    <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+                `;
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                profileSection.innerHTML = `
+                    <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/Customer/${customerID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch profile.');
+
+                const data = await response.json();
+                const imageUrl = data.image ? `${API_BASE}${data.image}` : 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+                const customerName = data.customerName || 'User';
+
+                profileSection.innerHTML = `
+                    <div class="user-profile" onclick="goToProfile()">
+                        <img src="${imageUrl}" alt="Profile Picture" title="${customerName}">
+                        <span>${customerName}</span>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Error loading profile:', err);
+                profileSection.innerHTML = `
+                    <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+                `;
+            }
+        }
+
+        async function deleteOrder(orderID, token, cancelBtn) {
+            try {
+                // Insert Cancelled status
+                const statusResponse = await fetch(`${ORDER_STATUS_API}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        OrderID: orderID,
+                        Status: 'Cancelled'
+                    })
+                });
+
+                if (!statusResponse.ok) {
+                    const error = await statusResponse.text();
+                    throw new Error(`Failed to set Cancelled status: ${error}`);
+                }
+
+                // Optionally delete the order
+                const deleteResponse = await fetch(`${ORDERS_API}/${orderID}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const responseText = await deleteResponse.text();
+                let result;
+                try {
+                    result = responseText ? JSON.parse(responseText) : {};
+                } catch (err) {
+                    console.error('Failed to parse response:', responseText);
+                    throw new Error('Invalid server response');
+                }
+
+                if (!deleteResponse.ok) {
+                    if (deleteResponse.status === 404 || result.Message?.includes("Order not found")) {
+                        showNotification(`Order ${orderID} cancelled successfully or was already cancelled.`);
+                        setTimeout(() => {
+                            window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+                        }, 1000);
+                        return;
+                    }
+                    throw new Error(result.error || result.Message || 'Failed to cancel order');
+                }
+
+                showNotification('Order cancelled successfully');
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+                }, 1000);
+            } catch (err) {
+                console.error('Error cancelling order:', err);
+                showNotification(`Failed to cancel order: ${err.message}`, true);
+            } finally {
+                if (cancelBtn) {
+                    cancelBtn.disabled = false;
+                    cancelBtn.classList.remove('loading');
+                    cancelBtn.innerHTML = '<span>🗑️</span> Cancel Order';
+                }
+            }
+        }
+
+        async function loadOrderStatus(orderID, token) {
+            const container = document.getElementById('order-status-container');
+            container.innerHTML = '';
+
+            try {
+                const response = await fetch(`${ORDER_STATUS_API}/${orderID}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Order status not found.');
+                    }
+                    throw new Error('Failed to load order status');
+                }
+                const order = await response.json();
+                console.log('Raw order status:', order);
+
+                const totalPrice = order.quantity * order.product.price;
+                const orderDate = new Date(order.orderDate);
+                const deliveryDate = new Date(orderDate);
+                deliveryDate.setDate(orderDate.getDate() + 5);
+
+                // Define default status sequence
+                const defaultStatuses = order.orderStatuses.some(s => s.status === 'Cancelled')
+                    ? ['Order is placed', 'Cancelled']
+                    : ['Order is placed', 'Processing', 'Shipped', 'Delivered'];
+
+                // Get active statuses from API
+                const activeStatuses = order.orderStatuses.map(s => s.status);
+                const currentStatus = activeStatuses[activeStatuses.length - 1] || 'Order is placed';
+                const currentStatusIndex = defaultStatuses.indexOf(currentStatus);
+
+                // Build roadmap
+                let roadmapHtml = '<div class="roadmap" role="list" aria-label="Order status timeline">';
+                defaultStatuses.forEach((status, index) => {
+                    const isActive = index <= currentStatusIndex;
+                    const statusData = order.orderStatuses.find(s => s.status === status);
+                    let timestamp = '';
+                    if (isActive && statusData && statusData.statusTimestamp) {
+                        timestamp = new Date(statusData.statusTimestamp).toLocaleString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        });
+                    } else if (isActive && status === 'Order is placed') {
+                        timestamp = new Date(order.orderDate).toLocaleString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        });
+                    }
+                    roadmapHtml += `
+                        <div class="roadmap-item ${isActive ? 'active' : ''}" role="listitem">
+                            <div class="roadmap-point"></div>
+                            <div class="roadmap-label">${status}${timestamp ? ` at ${timestamp}` : ''}</div>
+                        </div>
+                    `;
+                });
+                roadmapHtml += '</div>';
+
+                const div = document.createElement('div');
+                div.className = 'order-card';
+                div.innerHTML = `
+                    <a href="http://127.0.0.1:5500/selectors/asw/productdetails.html?productID=${order.productID}">
+                        <img src="${order.product.imagePath || 'https://via.placeholder.com/150'}" alt="${order.product.productName}">
+                    </a>
+                    <div class="order-title">${order.product.productName}</div>
+                    <div class="order-content">
+                        <div class="order-details">
+                            <div>Order ID: ${order.orderID}</div>
+                            <div>Quantity: ${order.quantity}</div>
+                            <div>Price: $${order.product.price.toFixed(2)}</div>
+                            <div>Total Price: $${totalPrice.toFixed(2)}</div>
+                            <div>Order Date: ${orderDate.toLocaleString()}</div>
+                            <div>Expected Delivery Date: ${deliveryDate.toLocaleString()}</div>
+                        </div>
+                        ${roadmapHtml}
+                    </div>
+                    ${order.orderStatuses.some(s => s.status === 'Cancelled') ? '<div class="cancelled-message">This order has been cancelled by the dealer.</div>' : ''}
+                    <button class="action-btn"><span>←</span> Back to Orders</button>
+                    ${['Order is placed', 'Processing'].includes(currentStatus) ? '<button class="action-btn cancel-order-btn"><span>🗑️</span> Cancel Order</button>' : ''}
+                `;
+                container.appendChild(div);
+
+                // Add event listeners for buttons
+                div.querySelectorAll('.action-btn')[0].addEventListener('click', () => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+                });
+                const cancelBtn = div.querySelector('.cancel-order-btn');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => {
+                        showConfirmPopup(
+                            'Are you sure you want to cancel this order?',
+                            async () => {
+                                cancelBtn.disabled = true;
+                                cancelBtn.classList.add('loading');
+                                cancelBtn.textContent = 'Cancelling...';
+                                await deleteOrder(orderID, token, cancelBtn);
+                            },
+                            () => {
+                                // No action needed on cancel
+                            }
+                        );
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading order status:', err);
+                container.innerHTML = `
+                    <div class="error-message">
+                        Could not load order status: ${err.message}<br>
+                        <button class="action-btn"><span>←</span> Back to Orders</button>
+                    </div>`;
+                const backBtn = container.querySelector('.action-btn');
+                if (backBtn) {
+                    backBtn.addEventListener('click', () => {
+                        window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+                    });
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view order status.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid customer ID. Please log in again.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 2000);
+                return;
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            const orderID = params.get('orderID');
+            if (!orderID || isNaN(orderID) || orderID <= 0) {
+                document.getElementById('order-status-container').innerHTML = `
+                    <div class="error-message">
+                        Invalid order ID.<br>
+                        <button class="action-btn"><span>←</span> Back to Orders</button>
+                    </div>`;
+                const backBtn = document.querySelector('.action-btn');
+                if (backBtn) {
+                    backBtn.addEventListener('click', () => {
+                        window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+                    });
+                }
+                return;
+            }
+
+            loadUserProfile();
+            loadOrderStatus(orderID, token);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Product</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    #error-message {
+      color: red;
+      text-align: center;
+      display: none;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1 id="form-title">Create Product</h1>
+  <form id="product-form">
+    <div class="form-group">
+      <label for="productName">Product Name</label>
+      <input type="text" id="productName" required>
+    </div>
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" rows="4" required></textarea>
+    </div>
+    <div class="form-group">
+      <label for="price">Price</label>
+      <input type="number" id="price" step="0.01" required>
+    </div>
+    <div class="form-group">
+      <label for="stock">Stock</label>
+      <input type="number" id="stock" required>
+    </div>
+    <div class="form-group">
+      <label for="imagePath">Image URL</label>
+      <input type="text" id="imagePath" required>
+    </div>
+    <button type="submit">Save Product</button>
+  </form>
+  <p id="error-message">An error occurred. Please try again.</p>
+</div>
+
+<script>
+  const API_BASE = 'http://192.168.2.37:5154';
+
+  // Helper function to extract dealerId from token
+  function getDealerIdFromToken(token) {
+    if (!token) {
+      console.error('No token found in localStorage under key "Token"');
+      return null;
+    }
+    try {
+      const tokenParts = token.split('.');
+      if (tokenParts.length !== 3) {
+        console.error('Invalid token format: Expected 3 parts, got', tokenParts.length, 'Token:', token.substring(0, 20) + '...');
+        return null;
+      }
+      const payload = JSON.parse(atob(tokenParts[1]));
+      console.log('Token Payload:', payload);
+      const dealerId = payload.DealerId || payload.dealerId || payload.sub || payload.userId || payload.id || payload.dealer_id || payload.DealerID;
+      if (!dealerId) {
+        console.error('Dealer ID not found in payload. Available keys:', Object.keys(payload));
+      }
+      return dealerId || null;
+    } catch (error) {
+      console.error('Error decoding token:', error.message, 'Token:', token.substring(0, 20) + '...');
+      return null;
+    }
+  }
+
+  // Load product data for editing
+  async function loadProduct() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    if (!productId) {
+      document.getElementById('form-title').textContent = 'Create Product';
+      return;
+    }
+
+    document.getElementById('form-title').textContent = 'Edit Product';
+    try {
+      const token = localStorage.getItem('Token');
+      if (!token) {
+        alert('Please login first');
+        window.location.href = 'dealer_login.html';
+        return;
+      }
+
+      console.log('Fetching product with ID:', productId);
+      const response = await fetch(`${API_BASE}/api/DealerProduct/${productId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('Response status:', response.status);
+      if (response.ok) {
+        const product = await response.json();
+        console.log('Product data:', product);
+        document.getElementById('productName').value = product.productName || '';
+        document.getElementById('description').value = product.description || '';
+        document.getElementById('price').value = product.price || 0;
+        document.getElementById('stock').value = product.stock || 0;
+        document.getElementById('imagePath').value = product.imagePath || '';
+      } else {
+        let errorMessage = 'Failed to load product. Please try again.';
+        if (response.status === 404) {
+          errorMessage = `Product with ID ${productId} does not exist.`;
+        } else {
+          try {
+            const errorData = await response.json();
+            console.error('API Error:', errorData);
+            errorMessage = errorData.title || errorMessage;
+          } catch (jsonError) {
+            console.error('Error parsing error response:', jsonError);
+          }
+        }
+        document.getElementById('error-message').textContent = errorMessage;
+        document.getElementById('error-message').style.display = 'block';
+      }
+    } catch (error) {
+      console.error('Error loading product:', error);
+      document.getElementById('error-message').textContent = 'An error occurred while loading the product.';
+      document.getElementById('error-message').style.display = 'block';
+    }
+  }
+
+  // Handle form submission
+  async function saveProduct(e) {
+    e.preventDefault();
+
+    try {
+      const token = localStorage.getItem('Token');
+      if (!token) {
+        alert('Please login first');
+        window.location.href = 'dealer_login.html';
+        return;
+      }
+
+      const dealerId = getDealerIdFromToken(token);
+      if (!dealerId) {
+        alert('Invalid token or dealer ID not found. Please login again.');
+        window.location.href = 'dealer_login.html';
+        return;
+      }
+
+      const product = {
+        dealerID: parseInt(dealerId),
+        productName: document.getElementById('productName').value,
+        description: document.getElementById('description').value,
+        price: parseFloat(document.getElementById('price').value) || 0,
+        stock: parseInt(document.getElementById('stock').value) || 0,
+        imagePath: document.getElementById('imagePath').value
+      };
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get('id');
+      const method = productId ? 'PUT' : 'POST';
+      const url = productId ? `${API_BASE}/api/DealerProduct/update/${productId}` : `${API_BASE}/api/DealerProduct/add`;
+
+      console.log('Submitting product:', product, 'Method:', method, 'URL:', url);
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(product)
+      });
+
+      const responseData = await response.json();
+      console.log('API Response:', responseData);
+
+      if (response.ok) {
+        alert(productId ? 'Product updated successfully' : 'Product added successfully');
+        window.location.href = 'dealer_products.html';
+      } else {
+        let errorMessage = responseData.title || 'Failed to save product. Please try again.';
+        if (responseData.title === 'Invalid Dealer ID') {
+          errorMessage = `Invalid Dealer ID (${product.dealerID}). Please login again or contact support.`;
+        } else if (responseData.detail && responseData.detail.includes('foreign key')) {
+          errorMessage = `Cannot add product due to invalid Dealer ID (${product.dealerID}).`;
+        }
+        document.getElementById('error-message').textContent = errorMessage;
+        document.getElementById('error-message').style.display = 'block';
+      }
+    } catch (error) {
+      console.error('Error saving product:', error);
+      document.getElementById('error-message').textContent = 'An error occurred while saving the product.';
+      document.getElementById('error-message').style.display = 'block';
+    }
+  }
+
+  // Attach form submission handler
+  document.getElementById('product-form').addEventListener('submit', saveProduct);
+
+  // Initial load
+  loadProduct();
+</script>
+</body>
+</html>

@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Profile</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #e3f2fd, #ffffff);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #2a2a2a;
+            color: white;
+        }
+
+        nav h1 {
+            margin: 0;
+            font-size: 1.8em;
+            cursor: pointer;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .home-link, .cart-link, .orders-link, .profile-link {
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: color 0.3s ease, text-decoration 0.3s ease;
+        }
+
+        .home-link:hover, .cart-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .orders-link:hover {
+            color: #ff9800;
+            text-decoration: underline;
+        }
+
+        .profile-link:hover {
+            color: #607d8b;
+            text-decoration: underline;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .user-profile img:hover {
+            transform: scale(1.1);
+        }
+
+        .user-profile span {
+            color: white;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .profile-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 550px;
+            margin: 50px auto;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #0d47a1;
+            font-weight: 600;
+        }
+
+        .info {
+            margin-top: 30px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+            font-size: 1.05em;
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+
+        .info-item i {
+            font-size: 1.2em;
+            margin-right: 12px;
+            color: #1e88e5;
+            width: 25px;
+            text-align: center;
+        }
+
+        .info-item span {
+            font-weight: 600;
+            color: #333;
+            width: 100px;
+        }
+
+        .info-item p {
+            margin: 0;
+            color: #444;
+            flex: 1;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-top: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        #profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        #profile-pic:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            background: #1976D2;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background-color: #0d47a1;
+        }
+
+        .upload-btn::after {
+            content: '+';
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        #imageUpload {
+            display: none;
+        }
+
+        .back-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #1976D2;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 25px;
+        }
+
+        .back-btn:hover {
+            background-color: #0d47a1;
+        }
+
+        #address-list > div {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        #address-list > div:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        #address-list button {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s ease;
+        }
+
+        #address-list button:hover {
+            background-color: #e0e0e0;
+        }
+
+        .logout-link {
+            display: inline-block;
+            padding: 10px 15px;
+            color: #d32f2f;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: color 0.3s, background-color 0.3s;
+        }
+
+        .logout-link:hover {
+            color: white;
+            background-color: #d32f2f;
+        }
+
+        #notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 0.95em;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #deleteConfirmModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .delete-confirm-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 70%;
+            max-width: 400px;
+            margin: 150px auto;
+            position: relative;
+            text-align: center;
+        }
+
+        .delete-confirm-content p {
+            margin: 0 0 20px;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .delete-btn {
+            padding: 10px 20px;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .delete-btn:hover {
+            background: #b71c1c;
+        }
+
+        .cancel-btn {
+            padding: 10px 20px;
+            background: #1976D2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background: #0d47a1;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" onclick="goToHome()" style="text-decoration: none; color: white;">
+            <h1>Mobile Store</h1>
+        </a>
+        <div class="nav-buttons">
+            <a href="#" onclick="goToHome()" class="home-link">🏠 Home</a>
+            <a href="#" onclick="goToCart()" class="cart-link">🛒 Cart</a>
+            <a href="#" onclick="goToOrders()" class="orders-link">📦 Orders</a>
+            <div id="profile-section">
+                <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <h2>Customer Profile</h2>
+        <div class="upload-section">
+            <img id="profile-pic" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Profile Picture" />
+            <label for="imageUpload" class="upload-btn"></label>
+            <input type="file" id="imageUpload" accept="image/*" onchange="uploadImage()" />
+        </div>
+        
+        <div class="info" id="profile-info">Loading...</div>
+
+        <h3 style="text-align:center; margin-top:30px;">Saved Addresses</h3>
+       
+        <div id="address-list" style="margin-top:20px;"></div>
+        <div style="text-align:center; margin-top:20px;">
+            <button onclick="openAddressModal()" class="back-btn">+ Add Address</button>
+        </div>
+
+        <button class="back-btn" onclick="goBack()">← Back to Store</button>
+        <center><a href="javascript:void(0)" onclick="logout()" class="logout-link">Logout</a></center>
+    </div>
+
+    <div id="addressModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:999;">
+        <div style="background:white; padding:20px; border-radius:10px; width:70%; max-width:400px; margin:100px auto; position:relative;">
+            <span onclick="closeAddressModal()" style="position:absolute; top:10px; right:15px; font-size:20px; cursor:pointer;">×</span>
+            <h3 style="text-align:center;">Add / Edit Address</h3>
+            <input type="hidden" id="addressId" />
+            <input type="text" id="addrName" placeholder="Name" 
+                   style="width:95%; margin-bottom:10px; padding:8px; border:1px solid #ccc; border-radius:8px; font-size:16px;" />
+            <input type="text" id="addrPhone" placeholder="Phone Number" 
+                   style="width:95%; margin-bottom:10px; padding:10px; border:1px solid #ccc; border-radius:8px; font-size:16px;" />
+            <textarea id="addrAddress" placeholder="Address" rows="3" 
+                      style="width:95%; margin-bottom:10px; padding:10px; border:1px solid #ccc; border-radius:8px; font-size:16px; resize:vertical;"></textarea>
+            <button onclick="saveAddress()" class="back-btn">Save Address</button>
+        </div>
+    </div>
+
+    <div id="deleteConfirmModal" style="display:none;" role="dialog" aria-label="Confirm Delete Address">
+        <div class="delete-confirm-content">
+            <span onclick="closeDeleteConfirmModal()" class="close-modal">×</span>
+            <p>Are you sure you want to delete this address?</p>
+            <button class="delete-btn" onclick="confirmDeleteAddress()">Delete</button>
+            <button class="cancel-btn" onclick="closeDeleteConfirmModal()">Cancel</button>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+
+    <script>
+        const API_BASE = 'http://192.168.2.138:5154';
+        let currentAddressId = null;
+
+        function showNotification(message, isError = false) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            if (isError) {
+                notification.classList.add('error');
+            }
+            notification.textContent = message;
+            notification.setAttribute('role', 'alert');
+            notification.setAttribute('aria-live', 'polite');
+            container.appendChild(notification);
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function goToHome() {
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+        }
+
+        function getCustomerIdFromToken(token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.CustomerId || payload.CustomerID || 0;
+            } catch (err) {
+                console.error('JWT decode error:', err);
+                return 0;
+            }
+        }
+
+        function goToCart() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your cart.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/addtocart.html';
+        }
+
+        function goToOrders() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view your orders.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+        }
+
+        function goToProfile() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in first.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/profile.html';
+        }
+
+        async function loadUserProfile() {
+            const token = localStorage.getItem('authToken');
+            const profileSection = document.getElementById('profile-section');
+
+            if (!token) {
+                profileSection.innerHTML = `
+                    <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+                `;
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                profileSection.innerHTML = `
+                    <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/Customer/${customerID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch profile.');
+
+                const data = await response.json();
+                const imageUrl = data.image ? `${API_BASE}${data.image}` : 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+                const customerName = data.customerName || 'User';
+
+                profileSection.innerHTML = `
+                    <div class="user-profile" onclick="goToProfile()">
+                        <img src="${imageUrl}" alt="Profile Picture" title="${customerName}">
+                        <span>${customerName}</span>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('Error loading profile:', err);
+                profileSection.innerHTML = `
+                    <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+                `;
+            }
+        }
+
+        async function loadProfile() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Missing credentials. Redirecting to login.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token. Redirecting to login.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/Customer/${customerID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch profile.');
+
+                const data = await response.json();
+
+                document.getElementById('profile-info').innerHTML = `
+                    <div class="info-item"><i class="fas fa-user"></i><span>Name:</span><p>${data.customerName || '-'}</p></div>
+                    <div class="info-item"><i class="fas fa-envelope"></i><span>Email:</span><p>${data.customerEmail}</p></div>
+                    <div class="info-item"><i class="fas fa-phone-alt"></i><span>Contact:</span><p>${data.contactNumber}</p></div>
+                `;
+
+                const imageUrl = data.image ? `${API_BASE}${data.image}` : "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+                document.getElementById('profile-pic').src = imageUrl;
+            } catch (err) {
+                document.getElementById('profile-info').innerText = 'Error loading profile.';
+                console.error(err);
+                showNotification('Failed to load profile.', true);
+            }
+        }
+
+        async function uploadImage() {
+            const fileInput = document.getElementById('imageUpload');
+            const file = fileInput.files[0];
+            const token = localStorage.getItem('authToken');
+
+            if (!file || !token) {
+                showNotification('Missing file or credentials.', true);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/api/Customer/${customerID}/UploadImage`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Upload failed');
+
+                const result = await response.json();
+                document.getElementById('profile-pic').src = result.imageUrl;
+                showNotification('Image updated successfully!');
+                window.location.reload();
+            } catch (err) {
+                console.error(err);
+                showNotification('Error uploading image.', true);
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+        }
+
+        async function loadAddresses() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to view addresses.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            const container = document.getElementById('address-list');
+            container.innerHTML = 'Loading...';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/CustomerAddress/customer/${customerID}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Failed to fetch addresses');
+                const data = await res.json();
+                if (!data.length) {
+                    container.innerHTML = '<p style="text-align:center;">No address found.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                data.forEach(addr => {
+                    container.innerHTML += `
+                        <div style="border:1px solid #ccc; padding:10px; border-radius:8px; margin-bottom:10px;">
+                            <p><strong>Name:</strong> ${addr.name}</p>
+                            <p><strong>Phone:</strong> ${addr.phoneNumber}</p>
+                            <p><strong>Address:</strong> ${addr.address}</p>
+                            <button onclick='editAddress(${JSON.stringify(addr)})' style="margin-right:10px;">Edit</button>
+                            <button onclick='deleteAddress(${addr.addressId})'>Delete</button>
+                        </div>`;
+                });
+            } catch (err) {
+                container.innerHTML = 'Error loading addresses.';
+                console.error(err);
+                showNotification('Failed to load addresses.', true);
+            }
+        }
+
+        async function openAddressModal() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to add an address.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/CustomerAddress/customer/${customerID}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch addresses');
+                const addresses = await response.json();
+
+                if (addresses.length >= 3) {
+                    showNotification('Maximum limit of 3 addresses reached. Please edit or delete an existing address.', true);
+                    return;
+                }
+
+                clearAddressForm();
+                document.getElementById('addressModal').style.display = 'block';
+            } catch (err) {
+                console.error('Error checking address limit:', err);
+                showNotification('Error checking address limit. Please try again.', true);
+            }
+        }
+
+        function closeAddressModal() {
+            document.getElementById('addressModal').style.display = 'none';
+        }
+
+        function clearAddressForm() {
+            document.getElementById('addressId').value = '';
+            document.getElementById('addrName').value = '';
+            document.getElementById('addrPhone').value = '';
+            document.getElementById('addrAddress').value = '';
+        }
+
+        function editAddress(addr) {
+            document.getElementById('addressId').value = addr.addressId;
+            document.getElementById('addrName').value = addr.name;
+            document.getElementById('addrPhone').value = addr.phoneNumber;
+            document.getElementById('addrAddress').value = addr.address;
+            document.getElementById('addressModal').style.display = 'block';
+        }
+
+        async function saveAddress() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to save an address.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            const customerID = getCustomerIdFromToken(token);
+            if (!customerID) {
+                showNotification('Invalid token.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            const addressId = document.getElementById('addressId').value;
+            const name = document.getElementById('addrName').value;
+            const phone = document.getElementById('addrPhone').value;
+            const address = document.getElementById('addrAddress').value;
+
+            if (!name || !phone || !address) {
+                showNotification('Please fill in all address fields.', true);
+                return;
+            }
+
+            const method = addressId ? 'PUT' : 'POST';
+            const url = addressId
+                ? `${API_BASE}/api/CustomerAddress/${addressId}`
+                : `${API_BASE}/api/CustomerAddress`;
+
+            const payload = {
+                customerId: customerID,
+                name: name,
+                phoneNumber: phone,
+                address: address
+            };
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw new Error('Save failed');
+                closeAddressModal();
+                loadAddresses();
+                showNotification(addressId ? 'Address updated successfully!' : 'Address added successfully!');
+            } catch (err) {
+                showNotification('Error saving address.', true);
+                console.error(err);
+            }
+        }
+
+        function openDeleteConfirmModal(addressId) {
+            currentAddressId = addressId;
+            document.getElementById('deleteConfirmModal').style.display = 'block';
+        }
+
+        function closeDeleteConfirmModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+            currentAddressId = null;
+        }
+
+        async function confirmDeleteAddress() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to delete an address.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                closeDeleteConfirmModal();
+                return;
+            }
+
+            if (!currentAddressId) {
+                showNotification('Invalid address ID.', true);
+                closeDeleteConfirmModal();
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/CustomerAddress/${currentAddressId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Delete failed');
+                closeDeleteConfirmModal();
+                loadAddresses();
+                showNotification('Address deleted successfully!');
+            } catch (err) {
+                showNotification('Error deleting address.', true);
+                console.error(err);
+                closeDeleteConfirmModal();
+            }
+        }
+
+        async function deleteAddress(addressId) {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                showNotification('Please log in to delete an address.', true);
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+                }, 1000);
+                return;
+            }
+
+            openDeleteConfirmModal(addressId);
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            showNotification('Logged out successfully!');
+            setTimeout(() => {
+                window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserProfile();
+            loadProfile();
+            loadAddresses();
+        });
+    </script>
+</body>
+</html>

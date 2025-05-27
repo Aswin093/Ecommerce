@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dealer Dashboard - Orders</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .error-message {
+    display: none;
+  }
+  #orderTable {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+  }
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #d1d5db;
+    vertical-align: middle;
+    background-color: inherit;
+  }
+  th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+    text-align: center;
+  }
+  td {
+    text-align: left;
+  }
+  tr:hover {
+    background-color: #f9fafb;
+    cursor: pointer;
+  }
+  td img.product-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  .modal-content {
+    background-color: white;
+    padding: 24px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #d1d5db;
+    width: 100%;
+  }
+  .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .product-image {
+    max-width: 80px;
+    max-height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  .modal-image {
+    max-width: 150px;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-top: 12px;
+  }
+  .modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+    margin-bottom: 16px;
+  }
+  .modal-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .modal-right {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .modal-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .modal-field strong {
+    flex: 0 0 140px;
+    font-weight: 600;
+    color: #374151;
+  }
+  .modal-field span {
+    flex: 1;
+    color: #4b5563;
+    word-break: break-word;
+  }
+  .max-w-7xl {
+    overflow: visible;
+  }
+  #notification-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .notification {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 0.95em;
+    max-width: 300px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .notification.error {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  .notification.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 3000;
+    display: none;
+  }
+  .confirm-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+    z-index: 3100;
+    display: none;
+    text-align: center;
+  }
+  .confirm-popup p {
+    margin: 0 0 20px;
+    font-size: 1em;
+    color: #333;
+  }
+  .confirm-popup .action-btn {
+    margin: 0 10px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .confirm-popup .action-btn.confirm {
+    background-color: #2563eb;
+    color: #fff;
+  }
+  .confirm-popup .action-btn.confirm:hover {
+    background-color: #1d4ed8;
+    box-shadow: 0 6px 10px rgba(37, 99, 235, 0.3);
+  }
+  .confirm-popup .action-btn.cancel {
+    background-color: #6c757d;
+    color: #fff;
+  }
+  .confirm-popup .action-btn.cancel:hover {
+    background-color: #5a6268;
+    box-shadow: 0 6px 10px rgba(108, 117, 125, 0.3);
+  }
+  @media (max-width: 768px) {
+    #orderTable {
+      overflow-x: auto;
+      background-color: #ffffff;
+    }
+  }
+  @media (max-width: 600px) {
+    .modal-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .modal-field strong {
+      flex: 0 0 120px;
+    }
+  }
+</style>
+</head>
+<body class="bg-gray-100 font-sans">
+  <!-- Navigation Bar -->
+  <nav class="bg-blue-600 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold">Dealer Dashboard</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="dealer_products.html" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Products</a>
+          <a href="dealer_inventory.html" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Inventory</a>
+          <a href="dealer_order.html" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Orders</a>
+          <button onclick="logout()" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Orders</h2>
+    <div id="error-message" class="error-message text-red-600 text-center mb-4"></div>
+    <div id="orderTable" class="rounded-lg shadow-md">
+      <table>
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Image</th>
+            <th>Order ID</th>
+            <th>Order Date</th>
+            <th>Customer Name</th>
+            <th>Contact Number</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Status</th>
+            <th>Quantity</th>
+            <th>Total Price</th>
+          </tr>
+        </thead>
+        <tbody id="orderTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal for Order Details and Status Update -->
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <h3 class="text-lg font-bold mb-4">Order Details</h3>
+      <div id="modalDetails" class="modal-grid">
+        <div class="modal-left">
+          <div class="modal-field">
+            <strong>Product Name:</strong>
+            <span id="modalProductName"></span>
+          </div>
+          <div id="modalProductImage"></div>
+        </div>
+        <div class="modal-right">
+          <div class="modal-field">
+            <strong>Order ID:</strong>
+            <span id="modalOrderId"></span>
+          </div>
+          <div class="modal-field">
+            <strong>Order Date:</strong>
+            <span id="modalOrderDate"></span>
+          </div>
+          <div class="modal-field">
+            <strong>Customer Name:</strong>
+            <span id="modalCustomerName"></span>
+          </div>
+          <div class="modal-field">
+            <strong>Contact Number:</strong>
+            <span id="modalContactNumber"></span>
+          </div>
+          <div class="modal-field">
+            <strong>Email:</strong>
+            <span id="modalEmail"></span>
+          </div>
+          <div class="modal-field">
+            <strong>Address:</strong>
+            <span id="modalAddress"></span>
+          </div>
+          <div class="modal-field">
+            <strong>Status:</strong>
+            <span id="modalStatus"></span>
+          </div>
+          <div class="modal-field">
+            <strong>Quantity:</strong>
+            <span id="modalQuantity"></span>
+          </div>
+          <div class="modal-field">
+            <strong>Total Price:</strong>
+            <span id="modalTotalPrice"></span>
+          </div>
+          <div class="modal-field">
+            <strong>Description:</strong>
+            <span id="modalDescription"></span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4">
+        <label for="statusSelect" class="block text-sm font-medium text-gray-700">Update Status</label>
+        <select id="statusSelect" class="mt-1">
+          <!-- Options populated dynamically -->
+        </select>
+      </div>
+      <div id="modalError" class="error-message text-red-600 text-sm mt-2"></div>
+      <div class="modal-buttons">
+        <button id="cancelOrderButton" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 hidden">Cancel Order</button>
+        <button id="cancelButton" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Close</button>
+        <button id="updateButton" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Update</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification and Confirmation Popup -->
+  <div id="notification-container"></div>
+  <div class="confirm-overlay" id="confirm-overlay"></div>
+  <div class="confirm-popup" id="confirm-popup">
+    <p id="confirm-message"></p>
+    <button class="action-btn confirm" id="confirm-yes">Yes</button>
+    <button class="action-btn cancel" id="confirm-no">No</button>
+  </div>
+
+  <script>
+    const API_BASE = 'http://192.168.2.37:5154';
+    const STATUS_SEQUENCE = ['Order is placed', 'Processing', 'Shipped', 'Delivered'];
+    const CANCELLABLE_STATUSES = ['Order is placed', 'Processing'];
+
+    // Helper function to truncate text
+    function truncateText(text, maxLength) {
+      if (!text) return 'N/A';
+      return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    }
+
+    // Helper function to show notifications
+    function showNotification(message, isError = false) {
+      const container = document.getElementById('notification-container');
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      if (isError) {
+        notification.classList.add('error');
+      }
+      notification.textContent = message;
+      notification.setAttribute('role', 'alert');
+      notification.setAttribute('aria-live', 'polite');
+      container.appendChild(notification);
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 10);
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // Helper function to show confirmation popup
+    function showConfirmPopup(message, onConfirm, onCancel) {
+      const overlay = document.getElementById('confirm-overlay');
+      const popup = document.getElementById('confirm-popup');
+      const messageElement = document.getElementById('confirm-message');
+      const yesBtn = document.getElementById('confirm-yes');
+      const noBtn = document.getElementById('confirm-no');
+
+      messageElement.textContent = message;
+      overlay.style.display = 'block';
+      popup.style.display = 'block';
+
+      const yesHandler = () => {
+        overlay.style.display = 'none';
+        popup.style.display = 'none';
+        onConfirm();
+        yesBtn.removeEventListener('click', yesHandler);
+        noBtn.removeEventListener('click', noHandler);
+      };
+
+      const noHandler = () => {
+        overlay.style.display = 'none';
+        popup.style.display = 'none';
+        if (onCancel) onCancel();
+        yesBtn.removeEventListener('click', yesHandler);
+        noBtn.removeEventListener('click', noHandler);
+      };
+
+      yesBtn.addEventListener('click', yesHandler);
+      noBtn.addEventListener('click', noHandler);
+    }
+
+    // Helper function to extract dealerId from token
+    function getDealerIdFromToken(token) {
+      if (!token) {
+        console.error('No token found in localStorage under key "Token"');
+        return null;
+      }
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const dealerId = payload.DealerID || payload.dealerId || payload.dealer_id || payload.sub || null;
+        if (!dealerId) {
+          console.error('No dealer ID found in token payload');
+          return null;
+        }
+        return dealerId;
+      } catch (error) {
+        console.error('Error decoding token:', error.message);
+        return null;
+      }
+    }
+
+    // Get dealerId from URL query parameter
+    function getDealerIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('dealerId');
+    }
+
+    // Fetch and display orders
+    async function fetchOrders() {
+      const errorMessage = document.getElementById('error-message');
+      errorMessage.style.display = 'none';
+
+      try {
+        const token = localStorage.getItem('Token');
+        if (!token) {
+          showNotification('Please login first', true);
+          setTimeout(() => {
+            window.location.href = 'dealer_login.html';
+          }, 2000);
+          return;
+        }
+
+        // Validate token
+        let payload;
+        try {
+          payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+            showNotification('Session expired. Please login again.', true);
+            localStorage.removeItem('Token');
+            setTimeout(() => {
+              window.location.href = 'dealer_login.html';
+            }, 2000);
+            return;
+          }
+        } catch (error) {
+          console.error('Invalid token format:', error.message);
+          showNotification('Invalid token. Please login again.', true);
+          localStorage.removeItem('Token');
+          setTimeout(() => {
+            window.location.href = 'dealer_login.html';
+          }, 2000);
+          return;
+        }
+
+        const dealerId = getDealerIdFromUrl() || getDealerIdFromToken(token);
+        if (!dealerId) {
+          showNotification('Invalid token or dealer ID not found. Please login again.', true);
+          localStorage.removeItem('Token');
+          setTimeout(() => {
+            window.location.href = 'dealer_login.html';
+          }, 2000);
+          return;
+        }
+
+        const response = await fetch(`${API_BASE}/api/DealerOrder/${dealerId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const orders = await response.json();
+          console.log('Fetched orders:', orders); // Debug: Check for duplicate orderIds
+          displayOrders(orders);
+        } else {
+          const errorData = await response.json();
+          errorMessage.textContent = errorData.error || 'Failed to fetch orders.';
+          errorMessage.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        errorMessage.textContent = 'An error occurred while fetching orders.';
+        errorMessage.style.display = 'block';
+      }
+    }
+
+    // Display orders in table
+    function displayOrders(orders) {
+      const orderTableBody = document.getElementById('orderTableBody');
+      const existingRows = new Map();
+
+      // Collect existing rows by orderId
+      Array.from(orderTableBody.children).forEach(row => {
+        const orderId = row.children[2].textContent; // Order ID is in the third column
+        existingRows.set(orderId, row);
+      });
+
+      // Deduplicate orders by orderId, keeping the latest one
+      const uniqueOrders = new Map();
+      orders.forEach(order => {
+        uniqueOrders.set(order.orderId, order);
+      });
+
+      // Clear table body
+      orderTableBody.innerHTML = '';
+
+      if (uniqueOrders.size === 0) {
+        orderTableBody.innerHTML = '<tr><td colspan="11" class="text-gray-600 text-center">No orders found.</td></tr>';
+        return;
+      }
+
+      // Populate table with unique orders
+      uniqueOrders.forEach(order => {
+        const totalPrice = (order.quantity * order.product.price).toFixed(2);
+        const row = document.createElement('tr');
+        row.setAttribute('data-order-id', order.orderId); // Add unique identifier
+        row.innerHTML = `
+          <td>${order.product.productName}</td>
+          <td>${order.product.imagePath ? `<img src="${order.product.imagePath}" class="product-image" alt="${order.product.productName}" onerror="this.src='https://via.placeholder.com/80'">` : 'N/A'}</td>
+          <td>${order.orderId}</td>
+          <td>${new Date(order.orderDate).toLocaleString()}</td>
+          <td>${order.customer.name}</td>
+          <td>${order.customer.contactNumber || 'N/A'}</td>
+          <td>${order.customer.emailId || 'N/A'}</td>
+          <td>${order.address.addressLine}</td>
+          <td>${order.status || 'N/A'}</td>
+          <td>${order.quantity}</td>
+          <td>$${totalPrice}</td>
+        `;
+        row.addEventListener('click', () => showOrderModal(order));
+        orderTableBody.appendChild(row);
+      });
+    }
+
+    // Show order details in modal
+    function showOrderModal(order) {
+      const modal = document.getElementById('orderModal');
+      const modalProductName = document.getElementById('modalProductName');
+      const modalProductImage = document.getElementById('modalProductImage');
+      const modalOrderId = document.getElementById('modalOrderId');
+      const modalOrderDate = document.getElementById('modalOrderDate');
+      const modalCustomerName = document.getElementById('modalCustomerName');
+      const modalContactNumber = document.getElementById('modalContactNumber');
+      const modalEmail = document.getElementById('modalEmail');
+      const modalAddress = document.getElementById('modalAddress');
+      const modalStatus = document.getElementById('modalStatus');
+      const modalQuantity = document.getElementById('modalQuantity');
+      const modalTotalPrice = document.getElementById('modalTotalPrice');
+      const modalDescription = document.getElementById('modalDescription');
+      const statusSelect = document.getElementById('statusSelect');
+      const modalError = document.getElementById('modalError');
+      const cancelOrderButton = document.getElementById('cancelOrderButton');
+      const updateButton = document.getElementById('updateButton');
+      const cancelButton = document.getElementById('cancelButton');
+
+      modalProductName.textContent = order.product.productName || 'N/A';
+      modalProductImage.innerHTML = order.product.imagePath 
+        ? `<img src="${order.product.imagePath}" class="modal-image" alt="${order.product.productName}" onerror="this.src='https://via.placeholder.com/150'">`
+        : 'N/A';
+      modalOrderId.textContent = order.orderId || 'N/A';
+      modalOrderDate.textContent = order.orderDate ? new Date(order.orderDate).toLocaleString() : 'N/A';
+      modalCustomerName.textContent = order.customer.name || 'N/A';
+      modalContactNumber.textContent = order.customer.contactNumber || 'N/A';
+      modalEmail.textContent = order.customer.emailId || 'N/A';
+      modalAddress.textContent = order.address.addressLine || 'N/A';
+      modalStatus.textContent = order.status || 'N/A';
+      modalQuantity.textContent = order.quantity || 'N/A';
+      modalTotalPrice.textContent = order.quantity && order.product.price ? `$${(order.quantity * order.product.price).toFixed(2)}` : 'N/A';
+      modalDescription.textContent = order.product.description || 'N/A';
+      modalError.style.display = 'none';
+
+      // Populate status select
+      statusSelect.innerHTML = '';
+      const currentStatusIndex = STATUS_SEQUENCE.indexOf(order.status);
+      if (currentStatusIndex === -1) {
+        const option = document.createElement('option');
+        option.value = order.status;
+        option.textContent = order.status || 'N/A';
+        statusSelect.appendChild(option);
+      } else {
+        let option = document.createElement('option');
+        option.value = order.status;
+        option.textContent = order.status;
+        statusSelect.appendChild(option);
+        if (currentStatusIndex < STATUS_SEQUENCE.length - 1) {
+          option = document.createElement('option');
+          option.value = STATUS_SEQUENCE[currentStatusIndex + 1];
+          option.textContent = STATUS_SEQUENCE[currentStatusIndex + 1];
+          statusSelect.appendChild(option);
+        }
+        if (CANCELLABLE_STATUSES.includes(order.status)) {
+          option = document.createElement('option');
+          option.value = 'Cancelled';
+          option.textContent = 'Cancelled';
+          statusSelect.appendChild(option);
+        }
+      }
+
+      // Show/hide Cancel Order button
+      cancelOrderButton.style.display = CANCELLABLE_STATUSES.includes(order.status) && order.status !== 'Cancelled' ? 'block' : 'none';
+
+      modal.style.display = 'flex';
+
+      // Remove existing event listeners by cloning buttons
+      const newUpdateButton = updateButton.cloneNode(true);
+      updateButton.parentNode.replaceChild(newUpdateButton, updateButton);
+      const newCancelButton = cancelButton.cloneNode(true);
+      cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+      const newCancelOrderButton = cancelOrderButton.cloneNode(true);
+      cancelOrderButton.parentNode.replaceChild(newCancelOrderButton, cancelOrderButton);
+
+      // Attach new event listeners
+      newUpdateButton.addEventListener('click', () => updateStatus(order.orderId));
+      newCancelButton.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+      newCancelOrderButton.addEventListener('click', () => {
+        if (!CANCELLABLE_STATUSES.includes(order.status) || order.status === 'Cancelled') {
+          modalError.textContent = 'Order cannot be cancelled in this status.';
+          modalError.style.display = 'block';
+          return;
+        }
+        showConfirmPopup(
+          'Are you sure you want to cancel this order?',
+          () => cancelOrder(order.orderId, newCancelOrderButton),
+          () => {}
+        );
+      });
+    }
+
+    // Update order status
+    async function updateStatus(orderId) {
+      const modalError = document.getElementById('modalError');
+      const statusSelect = document.getElementById('statusSelect');
+      const newStatus = statusSelect.value;
+      const modal = document.getElementById('orderModal');
+
+      modalError.style.display = 'none';
+
+      if (!newStatus) {
+        modalError.textContent = 'Please select a status.';
+        modalError.style.display = 'block';
+        return;
+      }
+
+      // Validate status progression
+      const currentStatusIndex = STATUS_SEQUENCE.indexOf(statusSelect.options[0].value);
+      const validStatuses = currentStatusIndex === -1 
+        ? [statusSelect.options[0].value]
+        : [
+            STATUS_SEQUENCE[currentStatusIndex],
+            ...(currentStatusIndex < STATUS_SEQUENCE.length - 1 ? [STATUS_SEQUENCE[currentStatusIndex + 1]] : []),
+            ...(CANCELLABLE_STATUSES.includes(statusSelect.options[0].value) ? ['Cancelled'] : [])
+          ];
+      if (!validStatuses.includes(newStatus)) {
+        modalError.textContent = 'Invalid status selected.';
+        modalError.style.display = 'block';
+        return;
+      }
+
+      try {
+        const timestamp = new Date().toISOString();
+        console.log('Sending POST request for OrderId:', orderId, 'with Status:', newStatus, 'and Timestamp:', timestamp);
+
+        const response = await fetch(`${API_BASE}/api/OrderStatus`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('Token')}`
+          },
+          body: JSON.stringify({ orderID: orderId, status: newStatus, statusTimestamp: timestamp })
+        });
+
+        console.log('Response Status:', response.status, 'Response OK:', response.ok);
+
+        if (response.ok) {
+          showNotification('Order status updated successfully');
+          modal.style.display = 'none';
+          fetchOrders();
+        } else {
+          let errorData;
+          try {
+            errorData = await response.json();
+          } catch (e) {
+            console.error('Failed to parse error response:', e);
+            errorData = { message: `Server error: ${response.status} ${response.statusText}` };
+          }
+          modalError.textContent = errorData.message || 'Failed to update order status.';
+          modalError.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error updating order status:', error);
+        modalError.textContent = `Failed to update order status: ${error.message || 'Network or unexpected error'}`;
+        modalError.style.display = 'block';
+      }
+    }
+
+    // Cancel order
+    async function cancelOrder(orderId, cancelButton) {
+      const modal = document.getElementById('orderModal');
+      const modalError = document.getElementById('modalError');
+      modalError.style.display = 'none';
+
+      try {
+        cancelButton.disabled = true;
+        cancelButton.textContent = 'Cancelling...';
+        const timestamp = new Date().toISOString();
+        console.log(`Attempting to cancel order ID: ${orderId} by setting status to Cancelled with Timestamp: ${timestamp}`);
+
+        const response = await fetch(`${API_BASE}/api/OrderStatus`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('Token')}`
+          },
+          body: JSON.stringify({ orderID: orderId, status: 'Cancelled', statusTimestamp: timestamp })
+        });
+
+        console.log('Response Status:', response.status, 'Response OK:', response.ok);
+
+        let errorData;
+        if (!response.ok) {
+          try {
+            errorData = await response.json();
+          } catch (e) {
+            console.error('Failed to parse error response:', e);
+            errorData = { message: `Server error: ${response.status} ${response.statusText}` };
+          }
+        }
+
+        if (response.ok) {
+          showNotification('Order cancelled successfully');
+          modal.style.display = 'none';
+          fetchOrders();
+        } else {
+          const errorMessage = errorData?.message || `Failed to cancel order: ${response.status} ${response.statusText}`;
+          console.error('Cancellation error details:', errorData);
+          modalError.textContent = errorMessage;
+          modalError.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error cancelling order:', error);
+        modalError.textContent = `Failed to cancel order: ${error.message || 'Network or unexpected error'}`;
+        modalError.style.display = 'block';
+      } finally {
+        cancelButton.disabled = false;
+        cancelButton.textContent = 'Cancel Order';
+      }
+    }
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem('Token');
+      window.location.href = 'dealer_login.html';
+    }
+
+    // Initial fetch
+    fetchOrders();
+  </script>
+</body>
+</html>

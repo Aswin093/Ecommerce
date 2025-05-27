@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dealer Dashboard - Products</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .product-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 250px;
+      cursor: pointer;
+    }
+    .product-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: contain;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .error-message {
+      display: none;
+    }
+    .content {
+      flex-grow: 1;
+    }
+    #notification-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .notification {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 12px 20px;
+      border-radius: 6px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      font-size: 0.95em;
+      max-width: 300px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .notification.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans">
+  <!-- Navigation Bar -->
+  <nav class="bg-blue-600 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold">Dealer Dashboard</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="dealer_products.html" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Products</a>
+          <a href="dealer_inventory.html" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Inventory</a>
+          <a href="dealer_order.html" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Orders</a>
+          <button onclick="logout()" class="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-800">Your Products</h2>
+      <a href="dealer_product_management.html" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium">Create Product</a>
+    </div>
+    <div id="error-message" class="error-message text-red-600 text-center mb-4"></div>
+    <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+  </div>
+
+  <div id="notification-container"></div>
+
+  <script>
+    const API_BASE = 'http://192.168.2.37:5154';
+
+    function showNotification(message, isError = false) {
+      const container = document.getElementById('notification-container');
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      if (isError) {
+        notification.classList.add('error');
+      }
+      notification.textContent = message;
+      notification.setAttribute('role', 'alert');
+      notification.setAttribute('aria-live', 'polite');
+      container.appendChild(notification);
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 10);
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    function getDealerIdFromToken(token) {
+      if (!token) {
+        console.error('No token found in localStorage under key "Token"');
+        return null;
+      }
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.DealerID || payload.dealerId || payload.dealer_id || payload.sub || null;
+      } catch (error) {
+        console.error('Error decoding token:', error.message);
+        return null;
+      }
+    }
+
+    async function fetchProducts() {
+      const errorMessage = document.getElementById('error-message');
+      errorMessage.style.display = 'none';
+
+      try {
+        const token = localStorage.getItem('Token');
+        if (!token) {
+          showNotification('Please login first.', true);
+          setTimeout(() => {
+            window.location.href = 'dealer_login.html';
+          }, 1000);
+          return;
+        }
+
+        const dealerId = getDealerIdFromToken(token);
+        if (!dealerId) {
+          showNotification('Invalid token or dealer ID not found. Please login again.', true);
+          setTimeout(() => {
+            window.location.href = 'dealer_login.html';
+          }, 1000);
+          return;
+        }
+
+        const response = await fetch(`${API_BASE}/api/DealerProduct/dealer/${dealerId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const products = await response.json();
+          displayProducts(products);
+        } else {
+          const errorData = await response.json();
+          errorMessage.textContent = errorData.error || 'Failed to fetch products.';
+          errorMessage.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        errorMessage.textContent = 'An error occurred while fetching products.';
+        errorMessage.style.display = 'block';
+      }
+    }
+
+    function displayProducts(products) {
+      const productGrid = document.getElementById('productGrid');
+      productGrid.innerHTML = '';
+
+      if (products.length === 0) {
+        productGrid.innerHTML = '<p class="text-gray-600 col-span-full text-center">No products found.</p>';
+        return;
+      }
+
+      products.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition';
+        productCard.innerHTML = `
+          <div class="content">
+            <img src="${product.imagePath || '/placeholder.jpg'}" alt="${product.productName}">
+            <h3 class="text-lg font-semibold text-gray-800">${product.productName}</h3>
+            <p class="text-gray-700 font-medium">₹${product.price.toFixed(2)}</p>
+            <p class="text-gray-600">Stock: ${product.stock}</p>
+          </div>
+        `;
+        productCard.onclick = () => window.location.href = `dealer_product_details.html?id=${product.productID}`;
+        productGrid.appendChild(productCard);
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('Token');
+      showNotification('Logged out successfully!');
+      setTimeout(() => {
+        window.location.href = 'dealer_login.html';
+      }, 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchProducts();
+    });
+  </script>
+</body>
+</html>

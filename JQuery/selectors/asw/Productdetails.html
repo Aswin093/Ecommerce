@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Product Detail</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      background-color: #2a2a2a;
+      color: white;
+    }
+
+    nav h1 {
+      margin: 0;
+      font-size: 1.8em;
+      cursor: pointer;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .home-link, .cart-link, .orders-link, .profile-link {
+      color: white;
+      font-size: 1em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 10px 15px;
+      transition: color 0.3s ease, text-decoration 0.3s ease;
+    }
+
+    .home-link:hover, .cart-link:hover {
+      color: #007bff;
+      text-decoration: underline;
+    }
+
+    .orders-link:hover {
+      color: #ff9800;
+      text-decoration: underline;
+    }
+
+    .profile-link:hover {
+      color: #607d8b;
+      text-decoration: underline;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .user-profile img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .user-profile img:hover {
+      transform: scale(1.1);
+    }
+
+    .user-profile span {
+      color: white;
+      font-size: 1em;
+      font-weight: 500;
+    }
+
+    .container {
+      display: flex;
+      max-width: 1200px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .carousel-container {
+      flex: 0 0 40%;
+      background-color: #000;
+      position: relative;
+    }
+
+    .carousel {
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .carousel-images {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+      height: 100%;
+    }
+
+    .carousel-images img {
+      flex-shrink: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 22px;
+      z-index: 2;
+      border-radius: 4px;
+    }
+
+    .prev {
+      left: 10px;
+    }
+
+    .next {
+      right: 10px;
+    }
+
+    .details-container {
+      flex: 0 0 60%;
+      padding: 30px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .product-header {
+      margin-bottom: 20px;
+    }
+
+    .product-header h2 {
+      margin: 0;
+      font-size: 28px;
+      color: #333;
+    }
+
+    .details p {
+      margin: 12px 0;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #555;
+      overflow-wrap: break-word;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #222;
+    }
+
+    .price {
+      font-size: 24px;
+      font-weight: bold;
+      color: #e53935;
+    }
+
+    .stock-warning {
+      color: #d32f2f;
+      font-size: 1.1em;
+      margin-top: 5px;
+    }
+
+    .buttons {
+      margin-top: 30px;
+    }
+
+    .buttons button {
+      padding: 12px 24px;
+      margin-right: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .add-cart {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .add-cart:hover {
+      background-color: #0056b3;
+    }
+
+    .buy-now {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .buy-now:hover:not(:disabled) {
+      background-color: #3e8e41;
+    }
+
+    .buy-now:disabled {
+      background-color: #cccccc;
+      color: #666666;
+      box-shadow: none;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    #notification-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .notification {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 12px 20px;
+      border-radius: 6px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      font-size: 0.95em;
+      max-width: 300px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .notification.error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .carousel-container,
+      .details-container {
+        flex: 1 1 100%;
+      }
+
+      .carousel {
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#" onclick="goToHome()" style="text-decoration: none; color: white;">
+      <h1>Mobile Store</h1>
+    </a>
+    <div class="nav-buttons">
+      <a href="#" onclick="goToHome()" class="home-link">🏠 Home</a>
+      <a href="#" onclick="goToCart()" class="cart-link">🛒 Cart</a>
+      <a href="#" onclick="goToOrders()" class="orders-link">📦 Orders</a>
+      <div id="profile-section">
+        <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="carousel-container">
+      <div class="carousel">
+        <div class="carousel-images" id="carousel-images"></div>
+        <button class="nav-btn prev" onclick="prevSlide()">❮</button>
+        <button class="nav-btn next" onclick="nextSlide()">❯</button>
+      </div>
+    </div>
+
+    <div class="details-container">
+      <div>
+        <div class="product-header">
+          <h2 id="product-title">Loading...</h2>
+        </div>
+        <div class="details" id="product-details"></div>
+      </div>
+      <div class="buttons">
+        <button class="add-cart" onclick="addToCart()">Add to Cart 🛒</button>
+        <button class="buy-now" id="buy-now-btn" onclick="buyNow()">Buy Now 💳</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="notification-container"></div>
+
+  <script>
+    const API_BASE = 'http://192.168.2.138:5154';
+    const ADD_CART_API = `${API_BASE}/api/Cart/add`;
+    const ADDRESSES_API = `${API_BASE}/api/CustomerAddress/customer`;
+    const params = new URLSearchParams(window.location.search);
+    const productID = params.get("productID");
+    let currentSlide = 0;
+
+    function showNotification(message, isError = false) {
+      const container = document.getElementById('notification-container');
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      if (isError) {
+        notification.classList.add('error');
+      }
+      notification.textContent = message;
+      notification.setAttribute('role', 'alert');
+      notification.setAttribute('aria-live', 'polite');
+      container.appendChild(notification);
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 10);
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }, 3000); // Increased to 3000ms for consistency
+    }
+
+    function goToHome() {
+      window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+    }
+
+    function getCustomerIdFromToken(token) {
+      try {
+        const payloadBase64 = token.split('.')[1];
+        const decodedPayload = atob(payloadBase64);
+        const payload = JSON.parse(decodedPayload);
+        return payload.CustomerId || payload.CustomerID || 0;
+      } catch (e) {
+        console.error('Failed to decode token:', e);
+        return 0;
+      }
+    }
+
+    function goToCart() {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        showNotification('Please log in to view your cart.', true);
+        setTimeout(() => {
+          window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+        }, 1000);
+        return;
+      }
+      window.location.href = 'http://127.0.0.1:5500/selectors/asw/addtocart.html';
+    }
+
+    function goToOrders() {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        showNotification('Please log in to view your orders.', true);
+        setTimeout(() => {
+          window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+        }, 1000);
+        return;
+      }
+      window.location.href = 'http://127.0.0.1:5500/selectors/asw/orders.html';
+    }
+
+    function goToProfile() {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        showNotification('Please log in first.', true);
+        setTimeout(() => {
+          window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+        }, 1000);
+        return;
+      }
+
+      const customerID = getCustomerIdFromToken(token);
+      if (!customerID) {
+        showNotification('Invalid token.', true);
+        setTimeout(() => {
+          window.location.href = 'http://127.0.0.1:5500/selectors/login.html';
+        }, 1000);
+        return;
+      }
+
+      window.location.href = 'http://127.0.0.1:5500/selectors/asw/profile.html';
+    }
+
+    async function loadUserProfile() {
+      const token = localStorage.getItem('authToken');
+      const profileSection = document.getElementById('profile-section');
+
+      if (!token) {
+        profileSection.innerHTML = `
+          <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+        `;
+        return;
+      }
+
+      const customerID = getCustomerIdFromToken(token);
+      if (!customerID) {
+        profileSection.innerHTML = `
+          <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+        `;
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/Customer/${customerID}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch profile.');
+
+        const data = await response.json();
+        const imageUrl = data.image ? `${API_BASE}${data.image}` : 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+        const customerName = data.customerName || 'User';
+
+        profileSection.innerHTML = `
+          <div class="user-profile" onclick="goToProfile()">
+            <img src="${imageUrl}" alt="Profile Picture" title="${customerName}">
+            <span>${customerName}</span>
+          </div>
+        `;
+      } catch (err) {
+        console.error('Error loading profile:', err);
+        profileSection.innerHTML = `
+          <a href="#" onclick="goToProfile()" class="profile-link">👤 Profile</a>
+        `;
+      }
+    }
+
+    async function loadProductImages() {
+      try {
+        const response = await fetch(`${API_BASE}/api/ProductImages/${productID}`);
+        if (!response.ok) throw new Error('Failed to load images');
+        const images = await response.json();
+
+        const imageContainer = document.getElementById("carousel-images");
+        if (!images || images.length === 0) {
+          imageContainer.innerHTML = `<img src="https://via.placeholder.com/400" alt="No Image Available">`;
+          return;
+        }
+
+        images.forEach(image => {
+          const img = document.createElement("img");
+          img.src = image.imagePath;
+          img.alt = `Product Image ${image.imageId}`;
+          imageContainer.appendChild(img);
+        });
+
+        updateCarousel();
+      } catch (error) {
+        console.error("Image Load Error:", error);
+        document.getElementById("carousel-images").innerHTML = `<img src="https://via.placeholder.com/400" alt="Error loading images">`;
+      }
+    }
+
+    async function loadProductDetails() {
+      try {
+        const response = await fetch(`${API_BASE}/api/ProductImages/Details/${productID}`);
+        if (!response.ok) throw new Error('Failed to fetch product details');
+        const product = await response.json();
+
+        document.getElementById("product-title").textContent = product.productName || 'Product';
+
+        let stockMessage = '';
+        const isOutOfStock = product.stock === 0;
+        if (product.stock <= 5 && product.stock > 0) {
+          stockMessage = `<p class="stock-warning">Only ${product.stock} left!</p>`;
+        } else if (isOutOfStock) {
+          stockMessage = `<p class="stock-warning">Out of stock!</p>`;
+        } else if (product.stock === undefined || product.stock === null) {
+          stockMessage = `<p style="color: #d32f2f; font-size: 1.1em; margin-top: 5px;">Stock data unavailable</p>`;
+        }
+
+        const detailsHTML = `
+          <p><span class="label">Description:</span> ${product.description || 'No description available'}</p>
+          <p class="price">$${product.price ? product.price.toFixed(2) : 'N/A'}</p>
+          ${stockMessage}
+        `;
+
+        document.getElementById("product-details").innerHTML = detailsHTML;
+
+        // Disable Buy Now button if out of stock
+        const buyNowBtn = document.getElementById("buy-now-btn");
+        if (isOutOfStock) {
+          buyNowBtn.disabled = true;
+        } else {
+          buyNowBtn.disabled = false;
+        }
+      } catch (error) {
+        console.error("Product Details Error:", error);
+        document.getElementById("product-title").textContent = "Product not found";
+        document.getElementById("product-details").innerHTML = "<p style='color: red;'>Unable to load product details.</p>";
+      }
+    }
+
+    async function addToCart() {
+      if (!productID || isNaN(productID) || productID <= 0) {
+        showNotification('Invalid product ID. Please try again.', true);
+        return;
+      }
+
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        showNotification('Please log in to add items to your cart.', true);
+        const returnUrl = encodeURIComponent(`http://127.0.0.1:5500/selectors/asw/productdetails.html?productID=${productID}&action=addToCart`);
+        setTimeout(() => {
+          window.location.href = `http://127.0.0.1:5500/selectors/login.html?returnUrl=${returnUrl}`;
+        }, 1000);
+        return;
+      }
+
+      const customerID = getCustomerIdFromToken(token);
+      if (!customerID) {
+        showNotification('Invalid or missing Customer ID in token.', true);
+        setTimeout(() => {
+          window.location.href = `http://127.0.0.1:5500/selectors/login.html?returnUrl=${encodeURIComponent(window.location.href)}`;
+        }, 1000);
+        return;
+      }
+
+      const CART_PRODUCTS_API = `${API_BASE}/api/CartProduct/customer/${customerID}`;
+      try {
+        const res = await fetch(CART_PRODUCTS_API, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch cart.');
+
+        const cartItems = await res.json();
+        const existingItem = cartItems.find(item => item.productID === parseInt(productID));
+
+        let cartData;
+        if (existingItem) {
+          cartData = {
+            cartID: existingItem.cartID,
+            customerID: customerID,
+            productID: parseInt(productID),
+            quantity: existingItem.quantity + 1,
+            addedDate: new Date().toISOString(),
+            isCheckedOut: false
+          };
+        } else {
+          cartData = {
+            customerID: customerID,
+            productID: parseInt(productID),
+            quantity: 1,
+            addedDate: new Date().toISOString(),
+            isCheckedOut: false
+          };
+        }
+
+        const response = await fetch(ADD_CART_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(cartData)
+        });
+
+        if (response.ok) {
+          showNotification(existingItem ? 'Quantity updated in cart!' : 'Item added to cart!');
+        } else {
+          const error = await response.text();
+          console.error('Error adding to cart:', error);
+          showNotification('Failed to update/add item to cart.', true);
+        }
+      } catch (error) {
+        console.error('Add to cart error:', error);
+        showNotification('An error occurred while adding to cart.', true);
+      }
+    }
+
+    async function buyNow() {
+      if (!productID || isNaN(productID) || productID <= 0) {
+        showNotification('Invalid product ID. Please try again.', true);
+        setTimeout(() => {
+          window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+        }, 1000);
+        return;
+      }
+
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        showNotification('Please log in to proceed to checkout.', true);
+        const returnUrl = encodeURIComponent(`http://127.0.0.1:5500/selectors/asw/checkout.html?productID=${productID}`);
+        setTimeout(() => {
+          window.location.href = `http://127.0.0.1:5500/selectors/login.html?returnUrl=${returnUrl}`;
+        }, 1000);
+        return;
+      }
+
+      const customerID = getCustomerIdFromToken(token);
+      if (!customerID) {
+        showNotification('Invalid or missing Customer ID in token.', true);
+        const returnUrl = encodeURIComponent(`http://127.0.0.1:5500/selectors/asw/checkout.html?productID=${productID}`);
+        setTimeout(() => {
+          window.location.href = `http://127.0.0.1:5500/selectors/login.html?returnUrl=${returnUrl}`;
+        }, 1000);
+        return;
+      }
+
+      try {
+        const addressResponse = await fetch(`${ADDRESSES_API}/${customerID}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!addressResponse.ok) throw new Error('Failed to fetch addresses.');
+        const addresses = await addressResponse.json();
+        if (addresses.length === 0) {
+          showNotification('No delivery address found. Please add an address in your profile.', true);
+          setTimeout(() => {
+            window.location.href = 'http://127.0.0.1:5500/selectors/asw/profile.html';
+          }, 1000);
+          return;
+        }
+      } catch (error) {
+        console.error('Error fetching addresses:', error);
+        showNotification('Failed to load addresses. Please try again.', true);
+        return;
+      }
+
+      window.location.href = `http://127.0.0.1:5500/selectors/asw/checkout.html?productID=${productID}`;
+    }
+
+    function updateCarousel() {
+      const imageContainer = document.getElementById("carousel-images");
+      const slideWidth = imageContainer.clientWidth;
+      imageContainer.style.transform = `translateX(-${currentSlide * slideWidth}px)`;
+    }
+
+    function prevSlide() {
+      const imageContainer = document.getElementById("carousel-images");
+      const totalSlides = imageContainer.children.length;
+      currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+      updateCarousel();
+    }
+
+    function nextSlide() {
+      const imageContainer = document.getElementById("carousel-images");
+      const totalSlides = imageContainer.children.length;
+      currentSlide = (currentSlide + 1) % totalSlides;
+      updateCarousel();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!productID || isNaN(productID) || productID <= 0) {
+        showNotification('Invalid product ID. Redirecting to home page.', true);
+        setTimeout(() => {
+          window.location.href = 'http://127.0.0.1:5500/selectors/asw/index.html';
+        }, 1000);
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const action = params.get('action');
+      if (action === 'addToCart') {
+        addToCart();
+      }
+
+      loadProductImages();
+      loadProductDetails();
+      loadUserProfile();
+    });
+  </script>
+</body>
+</html>
